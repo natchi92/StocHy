@@ -83,7 +83,7 @@ class ssmodels_t
   const arma::mat fillMatrix(matvar_t &content);
   // Read contents from MATLAB file of type cell,  this is used for Tq when in hybrid mode
   const std::string readCells(matvar_t &content);
-  void checkModel(ssmodels_t &model);
+  void checkModel();
 
   const arma::mat getDeterministicPartOfModelUpdate(const arma::mat x_k, const arma::mat u_k, const arma::mat d_k);
   const arma::mat getDeterministicPartOfModelUpdate(const arma::mat x_k, const arma::mat z_k);
