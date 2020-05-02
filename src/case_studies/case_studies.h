@@ -14,5 +14,8 @@ int case_study3();
 int case_study4(
     const std::string &model_path,
     const std::string &input_sig_path);
+int case_study_comparison();
+int case_study_heating_setup(const std::string &input_sig_path);
+int case_study_air_quality();
 
 #endif

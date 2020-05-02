@@ -57,20 +57,19 @@ public:
   arma::sp_mat Stepsmin;     // lower probability bound
   arma::sp_mat Stepsmax;     // upper probability bound
   arma::mat L;               // Labels of states
-  arma::mat Solution;        // Verification solution (Pmin, Pmax)
-  arma::mat Policy;          // Synthesis policy genereated
-  double E_max;              // Max resulting abstraction error
   double actNum;
   double eps; // min allowable abstraction error for adaptive-refinement
   Sys desc;   // Structure of internal dynamics
+  arma::mat Solution;        // Verification solution (Pmin, Pmax)
+  arma::mat Policy;          // Synthesis policy genereated
+  double E_max;              // Max resulting abstraction error
   bmdp_t();   // initialising the bmdp
   bmdp_t(taskSpec_t &myTask);
   bmdp_t(taskSpec_t &myTask, shs_t<arma::mat, int> &inModel);
   void bmdpAbstraction(int T, int RA); // Generate the abstraction
   void getHybSysModes();               // Grid domain
   void getSteps(); // compute lower and upper probabtilities (uniform)
-  void
-  getSteps(double epsilon); // compute lower and upper probabilitoes (adaptive)
+  void getSteps(double epsilon); // compute lower and upper probabilitoes (adaptive)
   void createPyGrid(std::vector<Strmode> ver_valid,
                     arma::mat boundary); // print grid
   void createPyGrid(std::vector<Strmode> ver_valid, arma::mat boundary,
@@ -199,10 +198,14 @@ static arma::mat refineRectangle(arma::mat ref) {
 // this function splits a hyperrectangle into 2 rectangles
 static arma::mat refineHyperRectangle(arma::mat ref) {
 
+  //	std::cout << "ref: " << ref << std::endl;
   arma::mat rmean = arma::mean(ref, 1);
+  //	std::cout << "rmean: " << rmean << std::endl;
   arma::mat rmin = arma::min(ref, 1);
+  //	std::cout << "rmin: " << rmin << std::endl;
 
   arma::mat rmax = arma::max(ref, 1);
+  //	std::cout << "rmax: " << rmax << std::endl;
 
   arma::mat newver = join_horiz(rmin, rmean);
   arma::mat newvar2 = join_horiz(rmean, rmax);
@@ -238,6 +241,8 @@ static arma::mat refineHyperRectangleLargestDiam(arma::mat ref) {
 static bool tolInvalid(arma::mat vt, arma::mat tol) {
 
   arma::mat v1d = arma::max(vt, 1) - arma::min(vt, 1);
+  std::cout << "vld: " << v1d << std::endl;
+  std::cout << "tol: " << tol << std::endl;
   if (arma::accu(arma::all(v1d < tol.t())) < tol.n_elem) {
     return 1;
   } else {
@@ -265,18 +270,20 @@ static bool pnHyperRect(arma::mat point, arma::mat rect) {
   bool inHyperRect = 0;
   if ((arma::all(point.col(0) >= rect.col(0)) ||
        arma::approx_equal(point.col(0), rect.col(0), "absdiff", 0.01)) &&
-      (arma::all(point.col(1) <= rect.col(1)) ||
-       arma::approx_equal(point.col(1), rect.col(1), "absdiff", 0.01))) {
+      (arma::all(point.col(1) <= rect.col(1)+1e-13) ||
+       arma::approx_equal(point.col(1), rect.col(1), "absdiff", 0.01) )) {
     inHyperRect = 1;
   }
   return inHyperRect;
 }
 
-static double myMinOptfuncBMDP(const std::vector<double> &x,std::vector<double> &grad, void *my_func_data) {
+static double myMinOptfuncBMDP(const std::vector<double> &x,
+                               std::vector<double> &grad, void *my_func_data) {
   auto *v = (arma::mat *)my_func_data;
   arma::mat vm = v[0];
+
   size_t dim = (size_t)vm(vm.n_rows - 1, 0);
-  double sig = (double)vm(vm.n_rows -1,1);
+  double sig = (double)vm(vm.n_rows - 1, 1);
   double denom = std::sqrt(2)*sig;
   double outer = 1 / (std::pow(2, dim));
   double inner = 1;
@@ -288,7 +295,6 @@ static double myMinOptfuncBMDP(const std::vector<double> &x,std::vector<double> 
     ++j;
   }
   double f = std::log(outer * inner);
-
   return f;
 }
 
@@ -297,16 +303,13 @@ static double myMinOptfuncRectBMDP(const std::vector<double> &x,
                                    void *my_func_data) {
   auto *v = (arma::mat *)my_func_data;
   arma::mat vm = v[0];
-
   size_t dim = (size_t)vm(vm.n_rows - 2, 0);
-  size_t sig = (size_t)vm(vm.n_rows - 2, 1);
   size_t qcols = (size_t)vm(vm.n_rows - 1, 0);
   size_t size_qp = (size_t)std::sqrt(qcols - 1);
-  dim = 2;
+  double sig = (double)vm(vm.n_rows -1,1);
   double denom = std::sqrt(2)*sig;
   double outer = 1 / (std::pow(2, dim));
   arma::vec inner = arma::ones<arma::vec>(size_qp);
-  int j = 0;
   for (unsigned i = 0; i < dim; ++i) {
     arma::vec xnew = arma::ones<arma::vec>(qcols) * x[i];
     arma::vec lower =
@@ -317,9 +320,10 @@ static double myMinOptfuncRectBMDP(const std::vector<double> &x,
         ((vm(arma::span(i * size_qp, (i + 1) * size_qp - 1), 0) -
           xnew(arma::span(i * size_qp, (i + 1) * size_qp - 1), 0)) /
          denom);
+
     inner %= arma::erf(lower) - arma::erf(upper);
-    ++j;
   }
+
   return std::abs(outer * arma::sum(inner));
 }
 

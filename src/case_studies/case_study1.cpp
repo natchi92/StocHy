@@ -14,8 +14,7 @@ int case_study1(const std::string &model_path)
   // Specify verification task
   std::vector<int> grid_size;
   int num = -1;
-  do 
-  {
+  do {
     std::cout << "Please input grid sizes of interest [value, value, ..], "
                  "enter -1 to generate results for all grids in Table 1 of "
                  "paper or 0 to stop: ";
@@ -24,16 +23,12 @@ int case_study1(const std::string &model_path)
       grid_size.push_back(num);
     }
   } while (num > 0);
-
-  if (grid_size.empty()) 
-  {
+  if (grid_size.empty()) {
     std::cout << "No dimension provided." << std::endl;
     exit(0);
   }
 
-  // Get number of grid to generate
-  // For FAUST set the error value
-  // For IMDP set the gridsize
+  // Specify verification task
   std::vector<double> E_FAUST;
   std::vector<double> GS_IMDP;
   if (num == -1) {
@@ -101,15 +96,15 @@ int case_study1(const std::string &model_path)
     double eps = E_FAUST[g];
 
     // Define safe set
-    arma::mat Safe = {{405, 540}, {18, 24}};
+    arma::mat Safe = {{18, 24}, {18, 24}};
 
     // Define grid type
-    int gridType = 2; // Grid: 1 = uniform, 2 = adaptive
+    int gridType = uniform; // Grid: 1 = uniform, 2 = adaptive
 
     // Time horizon
     int K = 3;
     faust_t inputFAUST;
-    taskSpec_t cs1SpecFAUST(2, K, 1, Safe, eps, gridType);
+    taskSpec_t cs1SpecFAUST(mdp, K, verify_safety, Safe, eps, gridType);
 
     // Combine model and associated task
     inputSpec_t<arma::mat, int> cs1InputFAUST(cs1SHS, cs1SpecFAUST);
@@ -132,7 +127,7 @@ int case_study1(const std::string &model_path)
     arma::mat rtol1 = {{1, 1}};
 
     // Specify task to be performed
-    taskSpec_t cs1Spec(3, K, 1, bound, grid1, rtol1);
+    taskSpec_t cs1Spec(imdp, K, verify_safety, bound, grid1, rtol1);
 
     // Combine model and associated task
     cs1SHS.x_mod[0].F = arma::eye(2, 2);

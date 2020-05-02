@@ -8,6 +8,13 @@
 
 int case_study2()
 {
+  // ------------------------- Case study 2 - Strategy synthesis
+  // -----------------------------------
+  std::cout << "------------ Performing Case Study 2 : Strategy synthesis  "
+               "-----------"
+            << std::endl;
+  std::cout << std::endl;
+
   // Define Time horizon
   int T = -1;
 
@@ -37,10 +44,17 @@ int case_study2()
   int x_dim = 2;
   shs_t<arma::mat, int> cs2SHS(x_dim, models);
 
-  // Specify task to be performed
-  taskSpec_t cs2Spec(3, T, 3, boundary, grid, rtol);
+  // Task definition (1 = simulator, 2 = faust^2, 3 = imdp)
+  int lb  =imdp;
 
-  // Comspecfication and associated task
+  // Property type
+  // (1 = verify safety, 2= verify reach-avoid, 3 = safety synthesis, 4 = reach-avoid synthesis)
+  int p = synthesis_reach_avoid;
+
+  // Specify task to be performed
+  taskSpec_t cs2Spec(lb, T, p, boundary, grid, rtol);
+
+  // Combin specfication and associated task
   inputSpec_t<arma::mat, int> cs2Input(cs2SHS, cs2Spec);
 
   // Perform Task

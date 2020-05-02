@@ -24,7 +24,7 @@ int case_study4(
                               15 * arma::ones<arma::mat>(1, monte));
   std::normal_distribution<double> d1{450, 25};
   std::normal_distribution<double> d2{17, 2};
-  for (size_t i = 0; i < monte; ++i) 
+  for (size_t i = 0; i < monte; ++i)
   {
     Xinit(0, i) = d1(generator);
     Xinit(1, i) = d2(generator);
@@ -41,7 +41,7 @@ int case_study4(
   shs_t<arma::mat, int> cs4SHS(model_path.c_str(), data);
 
   // Specify task to be performed
-  taskSpec_t cs4Spec(1, T1, monte);
+  taskSpec_t cs4Spec(simulator, T1, monte);
 
   // Combine model and associated task
   inputSpec_t<arma::mat, int> cs4Input(cs4SHS, cs4Spec);

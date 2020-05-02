@@ -12,11 +12,11 @@ static int parse_and_go(int argc, char **argv)
   // Case study 2 : Synthesis
   // Case study 3 : Scaling in dimensions
   // Case study 4 : Simulation
-  if (argc < 2) 
+  if (argc < 2)
   {
-    std::cout 
+    std::cout
       << "No case study selection was given, please make use of ./stochy i, "
-         "where i=[1,2,3,4] is the required case study number"
+         "where i=[1,..,7] is the required case study number"
       << std::endl;
     return -1;
   }
@@ -25,9 +25,9 @@ static int parse_and_go(int argc, char **argv)
 
   int res;
 
-  switch (selection) 
+  switch (selection)
   {
-    case 1: 
+    case 1:
       std::cout << "Performing Case Study 1 : Formal Verification of CO2 model"
                 << std::endl << std::endl;
       res = case_study1("CS1.mat");
@@ -53,7 +53,30 @@ static int parse_and_go(int argc, char **argv)
       std::cout << "Completed Case Study 4 : Results in results folder"
                 << std::endl << std::endl;
       break;
-    default: 
+    case 5:
+      std::cout << "Efficiency and quality of abstractions comparison "
+                << std::endl;
+      res = case_study_comparison();
+      std::cout << "Completed comparison : Results in results folder"
+                << std::endl << std::endl;
+      break;
+    case 6:
+      std::cout << "Heating setup with stochastic dynamics  "
+                << std::endl;
+      res = case_study_heating_setup("u_heating_setup.txt");
+      std::cout << "Completed heating setup with stochastic dynamics  example:"
+                << "Results in results folder"
+                << std::endl << std::endl;
+      break;
+    case 7:
+      std::cout << " Air quality model  "
+                << std::endl;
+      res = case_study_air_quality();
+      std::cout << "Completed air quality model example:"
+                << "Results in results folder"
+                << std::endl << std::endl;
+      break;
+    default:
       std::cout << "Invalid case study selection" << std::endl;
       res = -1;
       break;
@@ -62,7 +85,7 @@ static int parse_and_go(int argc, char **argv)
   return res;
 }
 
-int main(int argc, char **argv) 
+int main(int argc, char **argv)
 {
   std::cout << " _______  _______  _______  _______  __   __  __   __ "
             << std::endl;
@@ -79,7 +102,7 @@ int main(int argc, char **argv)
   std::cout << "|_______|  |___|  |_______||_______||__| |__|  |___| "
             << std::endl;
   std::cout << std::endl;
-  std::cout << " Welcome!  Copyright (C) 2018  natchi92 " << std::endl;
+  std::cout << " Welcome!  Copyright (C) 2019  natchi92 " << std::endl;
   std::cout << std::endl;
 
   return parse_and_go(argc, argv);

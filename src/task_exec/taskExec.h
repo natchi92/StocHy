@@ -471,7 +471,7 @@ static void performTask(inputSpec_t<arma::mat, int> input)  {
   }
   case 3: // model checking using BMDP
   {
-    // Initialise timers
+   // Initialise timers
     clock_t begin, end;
     double time;
     begin = clock();
@@ -479,7 +479,6 @@ static void performTask(inputSpec_t<arma::mat, int> input)  {
     // Get model definitions
     input.myModel.x_mod[0].F = arma::eye(input.myModel.n, input.myModel.n);
     bmdp_t taskBMDP(input.myTask, input.myModel);
-
     // Check input model
     int num_cont = input.myModel.n;
     for (int i = 0; i < input.myModel.Q; ++i) {
@@ -496,13 +495,8 @@ static void performTask(inputSpec_t<arma::mat, int> input)  {
         exit(0);
       }
     }
-  //  if (input.myModel.Q > 2) {
-  //    std::cout << "Work in progress, will be available shortly" << std::endl;
-  //    exit(0);
-  //  }
     // Set number of actions
     taskBMDP.actNum = input.myModel.Q;
-
     for (int i = 0; i < input.myModel.Q; ++i) {
       if (i == 0) {
         arma::mat j = arma::zeros<arma::mat>(1, input.myModel.n);
@@ -525,26 +519,12 @@ static void performTask(inputSpec_t<arma::mat, int> input)  {
       std::cout << "Incorrect relative tolerance parameter input" << std::endl;
       exit(0);
     }
+    int RA = 0;
+    if (input.myTask.propertySpec == 2 ||input.myTask.propertySpec == 4 ) {
+      RA = 1;
+    }
     // Check if need to rescale boundary
     arma::mat proj = arma::eye<arma::mat>(taskBMDP.desc.boundary.n_rows, taskBMDP.desc.boundary.n_rows);
-  /*  arma::mat max_Ss = arma::max(taskBMDP.desc.boundary );
-    arma::mat min_Ss = arma::min(taskBMDP.desc.boundary );
-    double diff_Ss = max_Ss(1) - min_Ss(0);
-    if(diff_Ss > 100) {
-      // Identify row with smallest values to rescale to that
-      arma::mat min_row = arma::min(taskBMDP.desc.boundary ,0);
-      arma::mat OrSS = taskBMDP.desc.boundary ; // The original Safeset definition
-      arma::mat to_inv = OrSS;
-      for(unsigned i =0; i < OrSS.n_rows; i++) {
-        taskBMDP.desc.boundary.row(i) = min_row;
-      }
-      arma::mat y_inv = arma::diagmat(min_row);
-      arma::mat j_bar = OrSS/y_inv;
-      proj = j_bar.replace(arma::datum::inf, 0);
-      for(unsigned k = 0; k < input.myModel.Q; k++) {
-        taskBMDP.desc.dyn.dynamics[k].sigma = arma::inv(proj)*taskBMDP.desc.dyn.dynamics[k].sigma;
-      }
-    }*/
 
     taskBMDP.eps = input.myTask.eps;
     // Constructing the abstraction
@@ -552,10 +532,6 @@ static void performTask(inputSpec_t<arma::mat, int> input)  {
 
     // Identify if performing synthesis or verification
     // and whether safety or reach avoid
-    int RA = 0;
-    if (input.myTask.propertySpec == 2 ||input.myTask.propertySpec == 4 ) {
-      RA = 1;
-    }
     taskBMDP.bmdpAbstraction(input.myTask.T, RA);
     std::cout << "Done with abstraction construction" << std::endl;
     if (input.myTask.propertySpec == 1 || input.myTask.propertySpec == 3) {
@@ -573,7 +549,7 @@ static void performTask(inputSpec_t<arma::mat, int> input)  {
     } else {
       // Get coordinates of labels for phi1 and phi 2
       arma::uvec phi1 =
-          taskBMDP.getLabels("../phi1.txt", input.myModel.n, true);
+          taskBMDP.getLabels("phi1.txt", input.myModel.n, true);
 
       // Since not phi1 need to negate phi1
       for (unsigned i = 0; i < phi1.n_rows; i++) {
@@ -583,8 +559,10 @@ static void performTask(inputSpec_t<arma::mat, int> input)  {
           phi1(i) = 1;
         }
       }
+
       arma::uvec phi2 =
-          taskBMDP.getLabels("../phi2.txt", input.myModel.n, false);
+          taskBMDP.getLabels("phi2.txt", input.myModel.n, false);
+
       std::cout << "Performing  model checking " << std::endl;
       taskBMDP.createSynthFile(phi1, phi2);
 
@@ -604,35 +582,6 @@ static void performTask(inputSpec_t<arma::mat, int> input)  {
     oss << std::put_time(&tm, "%d-%m-%Y-%H-%M-%S");
     auto str = oss.str();
 
-    // TODO: Rescale grid axis to original axis
-    int dim = taskBMDP.desc.boundary.n_rows;
-    if(dim == 2) {
-        arma::mat inter_d  = arma::ones<arma::mat>(1,dim);
-        for (unsigned i = 0; i < taskBMDP.mode.size(); ++i) {
-          for(unsigned p = 0; p < taskBMDP.mode[i].vertices.size(); p++){
-            for(unsigned d = 0; d < dim; d++) {
-              inter_d = proj(d,d)*inter_d;
-              if(taskBMDP.mode[i].vertices[p].n_cols == 4){
-                taskBMDP.mode[i].vertices[p].resize(dim,2);
-              }
-              taskBMDP.mode[i].vertices[p].row(d)= inter_d%taskBMDP.mode[i].vertices[p].row(d);
-              inter_d = arma::ones<arma::mat>(1,dim);
-            }
-          }
-        }
-        for(unsigned d = 0; d < dim; d++) {
-          inter_d = proj(d,d)*inter_d;
-          if(taskBMDP.desc.boundary.n_cols== 4){
-            arma::vec minb = arma::min(taskBMDP.desc.boundary,1);
-            arma::vec maxb = arma::max(taskBMDP.desc.boundary,1);
-            taskBMDP.desc.boundary.resize(dim,2);
-            taskBMDP.desc.boundary.col(0) = minb;
-            taskBMDP.desc.boundary.col(1) = maxb;
-          }
-          taskBMDP.desc.boundary.row(d)= inter_d%taskBMDP.desc.boundary.row(d);
-          inter_d = arma::ones<arma::mat>(1,dim);
-        }
-    }
     taskBMDP.formatOutput(time, str);
 
     // Simulation of BMDP

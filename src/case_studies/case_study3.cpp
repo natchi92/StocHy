@@ -67,11 +67,11 @@ int case_study3()
       reft = join_horiz(reft, arma::ones<arma::mat>(1, 1));
     }
     // Define time horizon
-    int T = -1;
+    int T = 50;
 
     // Select task to perform
     // 1 = verification, 2 = synthe:sis for propertySpec
-    taskSpec_t cs3Spec(3, T, 1, bound, grid, reft);
+    taskSpec_t cs3Spec(imdp, T,verify_safety, bound, grid, reft);
 
     // set appropriate dynamics
     arma::mat Am3 = 0.8 * arma::eye(crnt_dim, crnt_dim);

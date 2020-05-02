@@ -46,4 +46,13 @@ add_custom_command(
 
 install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/phi2.txt" DESTINATION bin)
 
+add_custom_command(
+ TARGET bmdp POST_BUILD
+ COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/phi1.txt" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+ COMMENT "copying CS1.mat => ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
+)
+
+install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/phi1.txt" DESTINATION bin)
+
+
 generic_includes(bmdp)
