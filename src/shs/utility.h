@@ -40,9 +40,26 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-enum Library {simulator =1 , mdp=2, imdp=3};
-enum grid {uniform =1 , adaptive=2};
-enum property {verify_safety=1, verify_reach_avoid=2,synthesis_safety=3, synthesis_reach_avoid=4};
+enum LibraryType
+{
+  SIMULATION =1,
+  MDP_ABSTRACTION=2,
+  IMDP_ABSTRACTION=3
+};
+
+enum GridType
+{
+  UNIFORM =1,
+  ADAPTIVE=2
+};
+
+enum PropertyType
+{
+  VERIFY_SAFETY=1,
+  VERIFY_REACH_AVOID=2,
+  SYNTHESIS_SAFETY=3,
+  SYNTHESIS_REACH_AVOID=4
+};
 
 // function to check whether a folder exists
 // according to given path
@@ -405,7 +422,7 @@ static size_t skipControls(const char *pData, size_t pos, size_t length) {
 }
 
 // Function to recursively compute all the possible
-// grid cells given a set of vertices describing
+// GridType cells given a set of vertices describing
 // their upper and lower bound  values
 static void rec(std::vector<arma::mat> &intervals, arma::mat cells,
                 arma::mat temp, unsigned index, unsigned what, unsigned n_rows,
