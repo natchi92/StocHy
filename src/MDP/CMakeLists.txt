@@ -1,12 +1,12 @@
 file(GLOB_RECURSE sources "*.cpp" "*.h")
 
-add_library(FAUST ${sources})
+add_library(MDP ${sources})
 
 find_library(ARMA_LIB armadillo)
 find_library(GINAC_LIB ginac)
 
 #TODO: not sure why this is needed.
-target_include_directories(FAUST PUBLIC
+target_include_directories(MDP PUBLIC
  $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/lib/cubature>
  )
 
@@ -24,4 +24,4 @@ install(FILES "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/libnlopt.so.0.10.0"
         DESTINATION lib)
 
 
-generic_includes(FAUST)
+generic_includes(MDP)
