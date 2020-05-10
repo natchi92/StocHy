@@ -7,7 +7,7 @@ find_library(ARMA_LIB armadillo)
 find_library(GINAC_LIB ginac)
 
 # setup scaffolding for third-party non-cmake libraries
-set(IMDP_LIB_PATH "${CMAKE_SOURCE_DIR}/lib/IMDP-synthesis")
+set(IMDP_LIB_PATH "${CMAKE_SOURCE_DIR}/lib/BMDP-synthesis")
 
 add_custom_target(IMDP_LIB_TARGET)
 add_custom_command(
