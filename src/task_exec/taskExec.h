@@ -9,7 +9,7 @@
 #define TASKEXEC_H_
 
 #include "Bmdp.h"
-#include "FAUST.h"
+#include "MDP.h"
 #include "InputSpec.h"
 
 using Matrix = Matrix;
@@ -96,7 +96,7 @@ static void performTask(inputSpec_t<Matrix, int> input)
 				Matrix InputSet = input.myTask.inputSet;
 				Matrix TargetSet = input.myTask.targetSet;
 
-				faust_t taskFAUST = myF;
+				faust_t taskMDP = myF;
 				// Check correctness of SafeSet input
 				if (SafeSet.n_cols != 2)
 				{
@@ -136,7 +136,7 @@ static void performTask(inputSpec_t<Matrix, int> input)
 					j = j_bar.replace(arma::datum::inf, 0);
 					for(unsigned k = 0; k < model.stateSpaceModelsPerMode.size(); k++)
 					{
-						taskFAUST.model.stateSpaceModelsPerMode[k].Sigma = arma::inv(j)*model.stateSpaceModelsPerMode[k].Sigma;
+						taskMDP.model.stateSpaceModelsPerMode[k].Sigma = arma::inv(j)*model.stateSpaceModelsPerMode[k].Sigma;
 					}
 				}
 				if (controlled)
@@ -208,69 +208,69 @@ static void performTask(inputSpec_t<Matrix, int> input)
 				{
 					// Get current model to perform abstraction and task on
 					input.myModel.stateSpaceModelsPerMode[0] = input.myModel.stateSpaceModelsPerMode[i];
-					taskFAUST.myKernel(input.myModel);
+					taskMDP.myKernel(input.myModel);
 					if (controlled)
 					{
 						switch (task2Solve)
 						{
 							case 111:
 							{
-								taskFAUST.Uniform_grid(epsilon, timeHorizon, SafeSet);
+								taskMDP.Uniform_grid(epsilon, timeHorizon, SafeSet);
 								break;
 							}
 							case 121:
 							{
-								taskFAUST.Uniform_grid(10 * epsilon, timeHorizon, SafeSet);
-								taskFAUST.Adaptive_grid_multicell(epsilon, timeHorizon);
+								taskMDP.Uniform_grid(10 * epsilon, timeHorizon, SafeSet);
+								taskMDP.Adaptive_grid_multicell(epsilon, timeHorizon);
 								break;
 							}
 							case 131:
 							{
-								taskFAUST.Uniform_grid(10 * epsilon, timeHorizon, SafeSet);
-								taskFAUST.Adaptive_grid_multicell_semilocal(epsilon, timeHorizon, SafeSet);
+								taskMDP.Uniform_grid(10 * epsilon, timeHorizon, SafeSet);
+								taskMDP.Adaptive_grid_multicell_semilocal(epsilon, timeHorizon, SafeSet);
 								break;
 							}
 							case 211:
 							{
-								taskFAUST.Uniform_grid_ReachAvoid(epsilon, timeHorizon, SafeSet, TargetSet);
+								taskMDP.Uniform_grid_ReachAvoid(epsilon, timeHorizon, SafeSet, TargetSet);
 								break;
 							}
 							case 221:
 							{
-								taskFAUST.Uniform_grid_ReachAvoid(10 * epsilon, timeHorizon, SafeSet,
+								taskMDP.Uniform_grid_ReachAvoid(10 * epsilon, timeHorizon, SafeSet,
 									TargetSet);
-								taskFAUST.Adaptive_grid_ReachAvoid(epsilon, timeHorizon, SafeSet, TargetSet);
+								taskMDP.Adaptive_grid_ReachAvoid(epsilon, timeHorizon, SafeSet, TargetSet);
 								break;
 							}
 							case 231:
 							{
-								taskFAUST.Uniform_grid_ReachAvoid(10 * epsilon, timeHorizon, SafeSet,
+								taskMDP.Uniform_grid_ReachAvoid(10 * epsilon, timeHorizon, SafeSet,
 									TargetSet);
-								taskFAUST.Adaptive_grid_ReachAvoid_semilocal(epsilon, timeHorizon, SafeSet,
+								taskMDP.Adaptive_grid_ReachAvoid_semilocal(epsilon, timeHorizon, SafeSet,
 									TargetSet);
 								break;
 							}
 							case 112:
 							{
-								taskFAUST.Uniform_grid_MCapprox(epsilon, timeHorizon, SafeSet);
+								taskMDP.Uniform_grid_MCapprox(epsilon, timeHorizon, SafeSet);
 								break;
 							}
 							case 212:
 							{
-								taskFAUST.Uniform_grid_ReachAvoid_MCapprox(epsilon, timeHorizon, SafeSet,
+								taskMDP.Uniform_grid_ReachAvoid_MCapprox(epsilon, timeHorizon, SafeSet,
 									TargetSet);
 								break;
 							}
 							case 122:
 							{
 								std::cout << "This options is not available yet. Work in progress.";
-								taskFAUST.Adaptive_grid_MCapprox(epsilon, timeHorizon, SafeSet);
+								taskMDP.Adaptive_grid_MCapprox(epsilon, timeHorizon, SafeSet);
 								break;
 							}
 							case 222:
 							{
 								std::cout << "This options is not available yet. Work in progress.";
-								taskFAUST.Adaptive_grid_ReachAvoidMCapprox(epsilon, timeHorizon, SafeSet,
+								taskMDP.Adaptive_grid_ReachAvoidMCapprox(epsilon, timeHorizon, SafeSet,
 									TargetSet);
 								break;
 							}
@@ -281,9 +281,9 @@ static void performTask(inputSpec_t<Matrix, int> input)
 								break;
 							}
 						}
-						std::cout << "The abstraction consists of " << taskFAUST.X.n_rows
+						std::cout << "The abstraction consists of " << taskMDP.X.n_rows
 							<< " representative points." << std::endl;
-						if (taskFAUST.X.n_rows > 1000000)
+						if (taskMDP.X.n_rows > 1000000)
 						{
 							std::cout << "ERROR: Abstraction is too large, need more memory"
 								<< std::endl;
@@ -291,16 +291,16 @@ static void performTask(inputSpec_t<Matrix, int> input)
 						}
 						// Because of taking the center points as representative points the
 						// resulting error is half of the outcome error.
-						taskFAUST.E = 0.5 * taskFAUST.E;
+						taskMDP.E = 0.5 * taskMDP.E;
 
 						// Creation of Markov Chain
 						if (Distribution == 2)
 						{
-							taskFAUST.MCapprox(epsilon);
+							taskMDP.MCapprox(epsilon);
 						}
 						else
 						{
-							taskFAUST.MCcreator(epsilon);
+							taskMDP.MCcreator(epsilon);
 						}
 						// Calculation of the resulting problem
 						if(input.myModel.discreteModes == 1)
@@ -309,14 +309,14 @@ static void performTask(inputSpec_t<Matrix, int> input)
 							{
 								case VERIFY_SAFETY:
 								{
-									taskFAUST.StandardProbSafety(timeHorizon);
+									taskMDP.StandardProbSafety(timeHorizon);
 									end = clock();
 									time = (double)(end - begin) / CLOCKS_PER_SEC;
 									break;
 								}
 								case VERIFY_REACH_AVOID:
 								{
-									taskFAUST.StandardReachAvoid(TargetSet, timeHorizon);
+									taskMDP.StandardReachAvoid(TargetSet, timeHorizon);
 									end = clock();
 									time = (double)(end - begin) / CLOCKS_PER_SEC;
 									break;
@@ -331,7 +331,7 @@ static void performTask(inputSpec_t<Matrix, int> input)
 						}
 						else
 						{
-							Tp_all.push_back(taskFAUST.Tp);
+							Tp_all.push_back(taskMDP.Tp);
 						}
 					}
 					else
@@ -340,59 +340,59 @@ static void performTask(inputSpec_t<Matrix, int> input)
 						{
 							case 111:
 							{
-								taskFAUST.Uniform_grid_Contr(epsilon, timeHorizon, SafeSet, InputSet);
+								taskMDP.Uniform_grid_Contr(epsilon, timeHorizon, SafeSet, InputSet);
 								break;
 							}
 							case 121:
 							{
-								taskFAUST.Uniform_grid_Contr(10 * epsilon, timeHorizon, SafeSet, InputSet);
-								taskFAUST.Adaptive_grid_multicell_Contr(epsilon, timeHorizon, SafeSet,
+								taskMDP.Uniform_grid_Contr(10 * epsilon, timeHorizon, SafeSet, InputSet);
+								taskMDP.Adaptive_grid_multicell_Contr(epsilon, timeHorizon, SafeSet,
 									InputSet);
 								break;
 							}
 							case 131:
 							{
-								taskFAUST.Uniform_grid_Contr(10 * epsilon, timeHorizon, SafeSet, InputSet);
-								taskFAUST.Adaptive_grid_semilocal_Contr(epsilon, timeHorizon, SafeSet,
+								taskMDP.Uniform_grid_Contr(10 * epsilon, timeHorizon, SafeSet, InputSet);
+								taskMDP.Adaptive_grid_semilocal_Contr(epsilon, timeHorizon, SafeSet,
 									InputSet);
 								break;
 							}
 							case 211:
 							{
-								taskFAUST.Uniform_grid_ReachAvoid_Contr(epsilon, timeHorizon, SafeSet, InputSet,
+								taskMDP.Uniform_grid_ReachAvoid_Contr(epsilon, timeHorizon, SafeSet, InputSet,
 									TargetSet);
 								break;
 							}
 							case 221:
 							{
-								taskFAUST.Uniform_grid_ReachAvoid_Contr(10 * epsilon, timeHorizon, SafeSet,
+								taskMDP.Uniform_grid_ReachAvoid_Contr(10 * epsilon, timeHorizon, SafeSet,
 									InputSet, TargetSet);
-								taskFAUST.Adaptive_grid_ReachAvoid(epsilon, timeHorizon, SafeSet, TargetSet);
+								taskMDP.Adaptive_grid_ReachAvoid(epsilon, timeHorizon, SafeSet, TargetSet);
 								break;
 							}
 							case 231:
 							{
 								std::cout << "This options is not available yet. Work in progress.";
 								exit(0);
-								taskFAUST.Uniform_grid_ReachAvoid_Contr(10 * epsilon, timeHorizon, SafeSet,
+								taskMDP.Uniform_grid_ReachAvoid_Contr(10 * epsilon, timeHorizon, SafeSet,
 									InputSet, TargetSet);
-								//    taskFAUST.Adaptive_grid_ReachAvoid_semilocal(epsilon,timeHorizon,SafeSet,TargetSet);
+								//    taskMDP.Adaptive_grid_ReachAvoid_semilocal(epsilon,timeHorizon,SafeSet,TargetSet);
 								break;
 							}
 							case 112:
 							{
-								taskFAUST.Uniform_grid_MCapprox_Contr(epsilon, timeHorizon, SafeSet, InputSet);
+								taskMDP.Uniform_grid_MCapprox_Contr(epsilon, timeHorizon, SafeSet, InputSet);
 								break;
 							}
 							case 212:
 							{
-								taskFAUST.Uniform_grid_ReachAvoidMCapprox_Contr(epsilon, timeHorizon, SafeSet,
+								taskMDP.Uniform_grid_ReachAvoidMCapprox_Contr(epsilon, timeHorizon, SafeSet,
 									InputSet, TargetSet);
 								break;
 							}
 							case 222:
 							{
-								taskFAUST.Adaptive_grid_ReachAvoidMCapprox(epsilon, timeHorizon, SafeSet,
+								taskMDP.Adaptive_grid_ReachAvoidMCapprox(epsilon, timeHorizon, SafeSet,
 									TargetSet);
 								break;
 							}
@@ -404,12 +404,12 @@ static void performTask(inputSpec_t<Matrix, int> input)
 							}
 						}
 
-						std::cout << "INFO: The abstraction consists of " << taskFAUST.X.n_rows
+						std::cout << "INFO: The abstraction consists of " << taskMDP.X.n_rows
 							<< " state representative points." << std::endl;
-						std::cout << "INFO: The abstraction consists of " << taskFAUST.U.n_rows
+						std::cout << "INFO: The abstraction consists of " << taskMDP.U.n_rows
 							<< " input representative points." << std::endl;
 
-						if (taskFAUST.X.n_rows * taskFAUST.U.n_rows > 100000)
+						if (taskMDP.X.n_rows * taskMDP.U.n_rows > 100000)
 						{
 							std::cout << "ERROR: Abstraction is too large, need more memory"
 								<< std::endl;
@@ -418,15 +418,15 @@ static void performTask(inputSpec_t<Matrix, int> input)
 
 						// Because of taking the center points as representative points the
 						// resulting error is half of the outcome error.
-						taskFAUST.E = 0.5 * taskFAUST.E;
+						taskMDP.E = 0.5 * taskMDP.E;
 						// Creation of Markov Chain
 						if (Distribution == SAMPLE)
 						{
-							taskFAUST.MCapprox_Contr(epsilon, model);
+							taskMDP.MCapprox_Contr(epsilon, model);
 						}
 						else
 						{
-							taskFAUST.MCcreator_Contr(epsilon);
+							taskMDP.MCcreator_Contr(epsilon);
 						}
 						// Calculation of the resulting problem
 						if(input.myModel.discreteModes == 1)
@@ -435,14 +435,14 @@ static void performTask(inputSpec_t<Matrix, int> input)
 							{
 								case VERIFY_SAFETY:
 								{
-									taskFAUST.StandardProbSafety_Contr(timeHorizon);
+									taskMDP.StandardProbSafety_Contr(timeHorizon);
 									end = clock();
 									time = (double)(end - begin) / CLOCKS_PER_SEC;
 									break;
 								}
 								case VERIFY_REACH_AVOID:
 								{
-									taskFAUST.StandardReachAvoid_Contr(TargetSet, timeHorizon);
+									taskMDP.StandardReachAvoid_Contr(TargetSet, timeHorizon);
 									end = clock();
 									time = (double)(end - begin) / CLOCKS_PER_SEC;
 									break;
@@ -457,7 +457,7 @@ static void performTask(inputSpec_t<Matrix, int> input)
 						}
 						else
 						{
-							Tp_all.push_back(taskFAUST.Tp);
+							Tp_all.push_back(taskMDP.Tp);
 						}
 					}
 				}
@@ -470,16 +470,16 @@ static void performTask(inputSpec_t<Matrix, int> input)
 				auto str = oss.str();
 
 				// Rescale grid axis to original axis
-				arma::vec inter_d  = arma::ones<arma::vec>(taskFAUST.X.n_rows);
-				for(unsigned d = 0; d < taskFAUST.X.n_cols/2; d++)
+				arma::vec inter_d  = arma::ones<arma::vec>(taskMDP.X.n_rows);
+				for(unsigned d = 0; d < taskMDP.X.n_cols/2; d++)
 				{
 					inter_d = j(d,d)*inter_d;
-					taskFAUST.X.col(d) = inter_d%taskFAUST.X.col(d);
-					inter_d = arma::ones<arma::vec>(taskFAUST.X.n_rows);
+					taskMDP.X.col(d) = inter_d%taskMDP.X.col(d);
+					inter_d = arma::ones<arma::vec>(taskMDP.X.n_rows);
 				}
 				if(input.myModel.discreteModes == 1)
 				{
-					taskFAUST.formatOutput(time, str, Problem, timeHorizon);
+					taskMDP.formatOutput(time, str, Problem, timeHorizon);
 				}
 			}
 			// For multiple modes only now that I have obtained all the
@@ -498,16 +498,16 @@ static void performTask(inputSpec_t<Matrix, int> input)
 					Tpall.push_back(Tp_all[qd][0]);
 				}
 				// Compute V for first one
-				taskFAUST.StandardProbSafety(input.myModel.discreteModes, discreteKernel, Tpall, timeHorizon);
+				taskMDP.StandardProbSafety(input.myModel.discreteModes, discreteKernel, Tpall, timeHorizon);
 				// Where we are storing all the Value functions for each control
 				int u_dim = 1;
-				if(!taskFAUST.U.is_empty())
+				if(!taskMDP.U.is_empty())
 				{
-					u_dim= taskFAUST.U.n_rows;
+					u_dim= taskMDP.U.n_rows;
 				}
-				Matrix Vall(taskFAUST.V.n_rows, u_dim);
+				Matrix Vall(taskMDP.V.n_rows, u_dim);
 				// store first computed V for first control in first column
-				Vall.col(0) =taskFAUST.V;
+				Vall.col(0) =taskMDP.V;
 
 				// Iteratively compute for all remaining control
 				Tpall.clear();
@@ -518,17 +518,17 @@ static void performTask(inputSpec_t<Matrix, int> input)
 						Tpall.push_back(Tp_all[qd][ud]);
 					}
 					// Compute the next value function
-					taskFAUST.StandardProbSafety(input.myModel.discreteModes, discreteKernel, Tpall, timeHorizon);
+					taskMDP.StandardProbSafety(input.myModel.discreteModes, discreteKernel, Tpall, timeHorizon);
 					// Store result
-					Vall.col(ud) = taskFAUST.V;
+					Vall.col(ud) = taskMDP.V;
 				}
 				// timeHorizonow to get final value  and optimal policy need to find
 				// V with max and corresponding column index
 				Matrix newV = arma::max(Vall, 1);
-				taskFAUST.V = newV;
+				taskMDP.V = newV;
 
 				arma::ucolvec index = arma::index_max(Vall, 1);
-				taskFAUST.OptimalPol = index;
+				taskMDP.OptimalPol = index;
 
 				//-------------------------------------------------------
 				auto t = std::time(nullptr);
@@ -536,7 +536,7 @@ static void performTask(inputSpec_t<Matrix, int> input)
 				std::ostringstream oss;
 				oss << std::put_time(&tm, "%d-%m-%Y-%H-%M-%S");
 				auto str = oss.str();
-				taskFAUST.formatOutput(time, str, Problem, timeHorizon);
+				taskMDP.formatOutput(time, str, Problem, timeHorizon);
 			}
 		}
 		catch (const std::bad_alloc &e)

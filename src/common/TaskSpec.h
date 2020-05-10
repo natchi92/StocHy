@@ -30,7 +30,7 @@ class TaskSpecification
 		// Model checking related
 		PropertyType propertySpec;
 
-		// synthesis FAUST related inputs
+		// synthesis MDP related inputs
 		arma::mat safeSet;
 		arma::mat targetSet;
 		arma::mat inputSet;

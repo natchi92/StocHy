@@ -7,28 +7,28 @@ find_library(ARMA_LIB armadillo)
 find_library(GINAC_LIB ginac)
 
 # setup scaffolding for third-party non-cmake libraries
-set(MDP_LIB_PATH "${CMAKE_SOURCE_DIR}/lib/MDP-synthesis")
+set(IMDP_LIB_PATH "${CMAKE_SOURCE_DIR}/lib/IMDP-synthesis")
 
-add_custom_target(MDP_LIB_TARGET)
+add_custom_target(IMDP_LIB_TARGET)
 add_custom_command(
-  TARGET MDP_LIB_TARGET
+  TARGET IMDP_LIB_TARGET
   COMMAND make lib
-  WORKING_DIRECTORY "${MDP_LIB_PATH}"
-  COMMENT "Building MDP library"
+  WORKING_DIRECTORY "${IMDP_LIB_PATH}"
+  COMMENT "Building IMDP library"
   )
 
 # 1.0: create an library target out of the library compilation result
-add_library(MDP_LIB STATIC IMPORTED GLOBAL)
-add_dependencies(MDP_LIB MDP_LIB_TARGET)
+add_library(IMDP_LIB STATIC IMPORTED GLOBAL)
+add_dependencies(IMDP_LIB IMDP_LIB_TARGET)
 
 # 2.0: specify where the library is and where to find the headers
-set_target_properties(MDP_LIB
+set_target_properties(IMDP_LIB
     PROPERTIES
-    IMPORTED_LOCATION "${MDP_LIB_PATH}/lib/libsynth.a"
-    INTERFACE_INCLUDE_DIRECTORIES "${MDP_LIB_PATH}")
+    IMPORTED_LOCATION "${IMDP_LIB_PATH}/lib/libsynth.a"
+    INTERFACE_INCLUDE_DIRECTORIES "${IMDP_LIB_PATH}")
 
 # 3.0: finally, link
-add_dependencies(bmdp MDP_LIB)
+add_dependencies(bmdp IMDP_LIB)
 
 # link with third-party SYSTEM libraries
 target_link_libraries(bmdp 
@@ -36,7 +36,7 @@ target_link_libraries(bmdp
   PUBLIC ${ARMA_LIB} 
   PUBLIC ${GINAC_LIB}
   PUBLIC nlopt
-  PUBLIC MDP_LIB)
+  PUBLIC IMDP_LIB)
 
 add_custom_command(
  TARGET bmdp POST_BUILD
