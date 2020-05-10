@@ -8,53 +8,43 @@
 #ifndef TASKSPEC_H_
 #define TASKSPEC_H_
 #include <armadillo>
+#include "utility.h"
 
-class taskSpec_t {
-public:
-  int task; // 1- Simulation, 2 - Verification FAUST, 3 - Verification  syntheis
-            // BMDP
-  int T;    // Time horizon to perform tool
-  int runs; // Number of runs
-  // Model checking related
-  int propertySpec; // 1-safety, 2-reach and avoid, 3 - formula free (FAUST),
-  // 1 - safety verification, 2 - safety synthesis, 3 - RA verification, 4 - RA
-  // synthesis FAUST related inputs
-  arma::mat safeSet;
-  arma::mat targetSet;
-  arma::mat inputSet;
-  double eps;
-  int typeGrid;          // 1- Uniform Grid, 2- Local Adaptive, 3 - MCMC approx
-  int assumptionsKernel; // 1- Lipschitz via Integral, 2- Lipschitz via sample,
-                         // 3- Max-min
-  int Controlled;
-  // BMDP related
-  arma::mat boundary;
-  arma::mat gridsize;
-  arma::mat reftol;
+class TaskSpecification
+{
+	TaskSpecification(): {};
+	TaskSpecification(int _timeHorizon, int _runs) :  task(SIMULATION), timeHorizon(_timeHorizon), runs(_runs) {};
+	TaskSpecification(int _timeHorizon, int _propertySpec, Matrix _safeSet, Matrix _actionSet, Matrix _targetSet, double _eps) : task(MDP_ABSTRACTION), timeHorizon(_timeHorizon), propertySpec(_propertySpec),
+		safeSet(_safeSet), targetSet(_targetSet), eps(_eps) {};
+	TaskSpecification(int _timeHorizon, int _propertySpec, Matrix _boundary, Matrix _gridSize, Matrix _refTol) : task(IMDP_ABSTRACTION), timeHorizon(_timeHorizon), propertySpec(_propertySpec),
+		boundary(_boundary), gridsize(_gridSize), refTol(_refTol) {};
+	void setGridType(const GridType _gridType) { gridType = _gridType; }
+	void setKernelAssumption(const KernelType _kernelAssumptions) {kernelAssumptions = _kernelAssumptions; }
+	void setControlType(const int _controlType) { controlType = _controlType; }
+	bool isControlled { return controlType == 1; }
 
-public:
-  taskSpec_t();
-  taskSpec_t(int inputTask, int N);
-  taskSpec_t(int inputTask, int N, int monte);
-  taskSpec_t(int inputTask, int N, int property, arma::mat safety,
-             arma::mat target, arma::mat input, double error, int gridType);
-  taskSpec_t(int inputTask, int N, int property, arma::mat set, arma::mat input,
-             double error, int gridType, int control);
-  taskSpec_t(int inputTask, int N, int property, arma::mat safety, double error,
-             int gridType);
-  taskSpec_t(int inputTask, int N, int property, arma::mat safety, double error,
-             int gridType, int Kernel);
-  taskSpec_t(int inputTask, int N, int property, arma::mat set, arma::mat input,
-             double error, int gridType, int Kernel, int control);
-  taskSpec_t(int inputTask, int N, int property, arma::mat safety,
-             arma::mat target, arma::mat input, double error, int gridType,
-             int Kernel, int control);
-  taskSpec_t(int inputTask, int N, int property, arma::mat safety,
-             arma::mat target, arma::mat input, double error, int gridType,
-             int control);
-  taskSpec_t(int inputTask, int N, int property, arma::mat bound,
-             arma::mat grid, arma::mat ref);
-  virtual ~taskSpec_t();
+	private:
+		LibraryType task;
+		int timeHorizon;									// Time horizon to perform tool
+		int runs;											// Number of runs
+		// Model checking related
+		PropertyType propertySpec;
+
+		// synthesis FAUST related inputs
+		arma::mat safeSet;
+		arma::mat targetSet;
+		arma::mat inputSet;
+		double eps;
+		GridType gridType;									// 1- Uniform Grid, 2- Local Adaptive, 3 - MCMC approx
+		KernelType kernelAssumptions;						// 1- Lipschitz via Integral, 2- Lipschitz via sample,
+		// 3- Max-min
+		int controlType;
+		// BMDP related
+		arma::mat boundary;
+		arma::mat gridSize;
+		arma::mat refTol;
+
+	public:
+		virtual ~TaskSpecification();
 };
-
-#endif /* TASKSPEC_H_ */
+#endif														/* TASKSPEC_H_ */
