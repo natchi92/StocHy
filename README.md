@@ -13,34 +13,20 @@ The tools allows to described discrete time shs by parsing well known state spac
 
 # Installation, documentation, and examples
 
-# Local dependencies (included with with source or as git submodules)
-
-    BMDP-Synthesis, nlopt, cubature
-
-# External dependencies 
-
-    boost, matio, armadillo, ginac,
-
-All the external dependencies can be automatically installed using 'get_dep.dev.sh' 
-(for building from source) and 'get_dep.dist.sh' (for packaged distributions)
-
-# Other dependencies assumed to be installed on the system
-
-    python2.7, numpy, matplotlib 
-
-Additionally, for build from source the follow are assumed to be available
-
-    cmake, git, g++
-
-# Installation
-
-    Install the necessary dependencies by running the file 'get_dep.h'
-    Clone the StocHy repository
-    Run the 'run.sh' file (found within the make directory) which will automatically build and compile stochy
+# Development version 
+  (1)  Run: git submodule update --init --recursive
+  (2)  Obtain required dependencies by running get_dep.dev.sh 
+  (3)  Use build_debug.sh to run StocHy in development mode
+  
+# Release version
+  (1)  Obtain required dependencies by running get_dep.dist.sh 
+  (2)  Use build_release.sh to run StocHy 
+  
+ Unless opting to extend or connect StocHy with your own tools, it is advised to opt to install the release version. 
 
 # Docker system
 
-To facilitate sharing of StocHy between different operating environments we provide a docker container containing StocHy. This is called StocHyDocker.zip.
+To facilitate sharing of StocHy between different operating environments we provide a docker container containing StocHy. Details are found within the Docker folder.
 
 # Wiki
 
@@ -60,14 +46,21 @@ We provide four examples as part of StocHy. For each example we have a dedicated
 
 # Running your own models
 
-Simply modify the Main.cpp file to contain your model description and task selection. Then build and compile StocHy via ./run.sh within the make folder.
+Simply create your own Case_study.cpp file within /src/case_studies/. This follows the same structure as described within the TACAS paper, however we don't need to modify the main file each time. We now create an individual case study and call the case study we want to run. 
+
+# Connecting with the individual libraries 
+All the src files for the individual libraries can be found within src/ . These are built as individual libraries and one can simply use any of the libraries as needed for further extensions.
+
+    (1) shs - contains the general model description for constructing a shs based on the input model structure; together with the simulator for shs.
+    (2) FAUST - library for performing abstractions via MDPs
+    (3) bmdp - library for performing abstractions via IMDPs 
 
 # Benchmark for stochastic processes
 
 We also provide a set of benchmarks for cyber-physical systems endowed with stochasticity (noise). These benchmarks serve as a means of constructing further models and test different verification/ synthesis
 algorithms against models with different complexities.
 
-The benchmarks can be found [here](https://gitlab.com/natchi92/BASBenchmarks), while the accompanying research paper describing these benchmarks can found is given [here](https://gitlab.com/natchi92/BASBenchmarks/blob/master/bench_ADHS.pdf)
+The benchmarks can be found [here](https://gitlab.com/natchi92/BASBenchmarks), while the accompanying research paper describing these benchmarks can found is given [here](https://gitlab.com/natchi92/BASBenchmarks/blob/master/bench_ADHS.pdf).
 
 # Contributions
 
