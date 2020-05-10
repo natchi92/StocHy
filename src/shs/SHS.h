@@ -15,16 +15,16 @@
 // General class template to cater for all the different SHS model definitions
 template <class T, class T2> class shs_t
 {
-  shs_t() noexcept: shs{1}, continuousSpaceDimension{1}, discreteModes{}, discreteKernel{}, Pk{arma::mat(discreteModes, continuousSpaceDimension)},
-            initialDiscreteMode{arma::mat(discreteModes, 1)}, stateSpaceModelsPerMode{}, continuousStateData{}  {}
+  shs_t() noexcept: shs{1}, continuousSpaceDimension{1}, discreteModes{}, discreteKernel{}, Pk{Matrix(discreteModes, continuousSpaceDimension)},
+            initialDiscreteMode{Matrix(discreteModes, 1)}, stateSpaceModelsPerMode{}, continuousStateData{}  {}
 
-  shs_t(const int _continuousSpaceDimension, const T2 _discreteModes, const _discreteKernel, const exdata_t  &_continuousStateData,
+  shs_t(const int _continuousSpaceDimension, const T2 _discreteModes, const _discreteKernel, const SimulationData  &_continuousStateData,
         const std::vector<ssmodels_t> &_stateSpaceModelsPerMode) noexcept:
         shs{1}, // TODO(ncauchi) remove this variable very clumsy
         continuousSpaceDimension{_continuousSpaceDimension}, discreteModes{_discreteModes},
         discreteKernel{_discreteKernel},
-        Pk{_continuousStateData.InitTq[0]}, // TODO(ncauchi) make better
-        initialDiscreteMode{_continuousStateData.q_init[0]},
+        Pk{_continuousStateData.initialModeDistribution[0]}, // TODO(ncauchi) make better
+        initialDiscreteMode{_continuousStateData.initialMode[0]},
         stateSpaceModelsPerMode{_stateSpaceModelsPerMode}, continuousStateData{_continuousStateData} {}
 
   shs_t(const int _continuousSpaceDimension, const T2 _discreteModes, const _discreteKernel,
@@ -35,12 +35,12 @@ template <class T, class T2> class shs_t
         Pk{}, initialDiscreteMode{},
         stateSpaceModelsPerMode{_stateSpaceModelsPerMode}, continuousStateData{} {}
 
-  shs_t(const _discreteKernel, const exdata_t  &_continuousStateData) noexcept :
+  shs_t(const _discreteKernel, const SimulationData  &_continuousStateData) noexcept :
         shs{1}, // TODO(ncauchi) remove this variable very clumsy
         continuousSpaceDimension{}, discreteModes{},
         discreteKernel{_discreteKernel},
-        Pk{_continuousStateData.InitTq[0]}, // TODO(ncauchi) make better
-        initialDiscreteMode{_continuousStateData.q_init[0]},
+        Pk{_continuousStateData.initialModeDistribution[0]}, // TODO(ncauchi) make better
+        initialDiscreteMode{_continuousStateData.initialMode[0]},
         stateSpaceModelsPerMode{}, continuousStateData{_continuousStateData} {}
 
 public:
@@ -48,10 +48,10 @@ public:
   int continuousSpaceDimension // Dimension of continuous state space in given mode
   T2 discreteModes;  // Discrete modes
   T discreteKernel;  // Discrete kernel- can represent either guards or probabilities
-  arma::mat Pk;
-  arma::mat initialDiscreteMode;                 // Modes
+  Matrix Pk;
+  Matrix initialDiscreteMode;                 // Modes
   std::vector<ssmodels_t> stateSpaceModelsPerMode; // container of models
-  exdata_t continuousStateData;
+  SimulationData continuousStateData;
   virtual ~shs_t() {}
 }
 // TODO(ncauchi) remove references to deleted function checkData
@@ -63,16 +63,16 @@ public:
 // logical guards not probabilities
 template<> class shs_t<std::vector<std::string>, int>
 {
-  /*shs_t() noexcept: shs{1}, continuousSpaceDimension{1}, discreteModes{}, discreteKernel{}, Pk{arma::mat(discreteModes, continuousSpaceDimension)},
-            initialDiscreteMode{arma::mat(discreteModes, 1)}, stateSpaceModelsPerMode{}, continuousStateData{}  {}
+  /*shs_t() noexcept: shs{1}, continuousSpaceDimension{1}, discreteModes{}, discreteKernel{}, Pk{Matrix(discreteModes, continuousSpaceDimension)},
+            initialDiscreteMode{Matrix(discreteModes, 1)}, stateSpaceModelsPerMode{}, continuousStateData{}  {}
 
-  shs_t(const int _continuousSpaceDimension, const T2 _discreteModes, const _discreteKernel, const exdata_t  &_continuousStateData,
+  shs_t(const int _continuousSpaceDimension, const T2 _discreteModes, const _discreteKernel, const SimulationData  &_continuousStateData,
         const std::vector<ssmodels_t> &_stateSpaceModelsPerMode) noexcept:
         shs{1}, // TODO(ncauchi) remove this variable very clumsy
         continuousSpaceDimension{_continuousSpaceDimension}, discreteModes{_discreteModes},
         discreteKernel{_discreteKernel},
-        Pk{_continuousStateData.InitTq[0]}, // TODO(ncauchi) make better
-        initialDiscreteMode{_continuousStateData.q_init[0]},
+        Pk{_continuousStateData.initialModeDistribution[0]}, // TODO(ncauchi) make better
+        initialDiscreteMode{_continuousStateData.initialMode[0]},
         stateSpaceModelsPerMode{_stateSpaceModelsPerMode}, continuousStateData{_continuousStateData} {}
 
   shs_t(const int _continuousSpaceDimension, const T2 _discreteModes, const _discreteKernel,
@@ -83,25 +83,24 @@ template<> class shs_t<std::vector<std::string>, int>
         Pk{}, initialDiscreteMode{},
         stateSpaceModelsPerMode{_stateSpaceModelsPerMode}, continuousStateData{} {}
 
-  shs_t(const _discreteKernel, const exdata_t  &_continuousStateData) noexcept :
+  shs_t(const _discreteKernel, const SimulationData  &_continuousStateData) noexcept :
         shs{1}, // TODO(ncauchi) remove this variable very clumsy
         continuousSpaceDimension{}, discreteModes{},
         discreteKernel{_discreteKernel},
-        Pk{_continuousStateData.InitTq[0]}, // TODO(ncauchi) make better
-        initialDiscreteMode{_continuousStateData.q_init[0]},
+        Pk{_continuousStateData.initialModeDistribution[0]}, // TODO(ncauchi) make better
+        initialDiscreteMode{_continuousStateData.initialMode[0]},
         stateSpaceModelsPerMode{}, continuousStateData{_continuousStateData} {}*/ //TODO(ncauchi) check if these are needed
 
-  shs_t(const char *fn, exdata_t &_continuousStateData)
+  shs_t(const char *fn, SimulationData &_continuousStateData)
   {
     // Obtain number of discrete modes and obtain discreteKernel
     if (! obtainTqfromMat(fn, *this))
     {
       // Get transition probabilities associated with the guards
       // and store in pk
-      Pk = {arma::mat(discreteModes, discreteModes)};
+      Pk = {Matrix(discreteModes, discreteModes)};
       continuousStateData = _continuousStateData;
-      initialDiscreteMode = data.q_init[0]; // Initial mode            //  Pk = data.InitTq;
-
+      initialDiscreteMode = continuousStateData.initialMode[0]; // Initial mode            //  Pk = data.initialModeDistribution;
 
       // create array containing the ssmodels
       std::vector<ssmodels_t> models;
@@ -135,10 +134,10 @@ public:
   int continuousSpaceDimension // Dimension of continuous state space in given mode
   int discreteModes;  // Discrete modes
   std::vector<std::string> discreteKernel;  // Discrete kernel- can represent either guards or probabilities
-  arma::mat Pk;
-  arma::mat initialDiscreteMode;                 // Modes
+  Matrix Pk;
+  Matrix initialDiscreteMode;                 // Modes
   std::vector<ssmodels_t> stateSpaceModelsPerMode; // container of models
-  exdata_t continuousStateData;
+  SimulationData continuousStateData;
   virtual ~shs_t() {}
 }
 
@@ -150,7 +149,7 @@ public:
       {
         // Get transition probabilities associated with the guards
         // and store in pk
-        Pk = {arma::mat(discreteModes, discreteModes)};
+        Pk = {Matrix(discreteModes, discreteModes)};
         // create array containing the ssmodels
       std::vector<ssmodels_t> models;
       for (int i = 1; i <= discreteModes; i++)
@@ -184,10 +183,10 @@ public:
   int continuousSpaceDimension // Dimension of continuous state space in given mode
   int discreteModes;  // Discrete modes
   std::vector<std::string> discreteKernel;  // Discrete kernel- can represent either guards or probabilities
-  arma::mat Pk;
-  arma::mat initialDiscreteMode;                 // Modes
+  Matrix Pk;
+  Matrix initialDiscreteMode;                 // Modes
   std::vector<ssmodels_t> stateSpaceModelsPerMode; // container of models
-  exdata_t continuousStateData;
+  SimulationData continuousStateData;
   virtual ~shs_t() {}
 }
 
@@ -196,21 +195,21 @@ public:
   void step_hyb(shs_t &old, int n, int cond) {
     // TODO: Update to cater for multiple discrete modes
     int xdim = old.continuousSpaceDimension
-    // arma::mat x_old=arma::mat(old.stateSpaceModelsPerMode[(int) old.initialDiscreteMode(n,0)].x_dim,1);
-    // x_old = old.continuousStateData.X[n];
-    arma::mat x_old(old.continuousStateData.X[n]);
-    arma::mat x_new = arma::mat(xdim, 1);
+    // Matrix x_old=Matrix(old.stateSpaceModelsPerMode[(int) old.initialDiscreteMode(n,0)].x_dim,1);
+    // x_old = old.continuousStateData.continuousVariables[n];
+    Matrix x_old(old.continuousStateData.continuousVariables[n]);
+    Matrix x_new = Matrix(xdim, 1);
 
     double q_old = old.initialDiscreteMode(n, 0);
     double q_new = q_old;
     // std::vector<double> vec(x_old.size());
-    // arma::mat x_old(vec);
-    // Eigen::Map<arma::mat>(vec.data(), x_old.n_rows, x_old.n_cols) =x_old;
+    // Matrix x_old(vec);
+    // Eigen::Map<Matrix>(vec.data(), x_old.n_rows, x_old.n_cols) =x_old;
     // //TODO fix
 
-    arma::mat u_old = arma::mat(old.stateSpaceModelsPerMode[(int)old.initialDiscreteMode(n, 0)].u_dim, 1);
+    Matrix u_old = Matrix(old.stateSpaceModelsPerMode[(int)old.initialDiscreteMode(n, 0)].u_dim, 1);
     u_old = old.continuousStateData.u_k;
-    arma::mat d_old = arma::mat(old.stateSpaceModelsPerMode[(int)old.initialDiscreteMode(n, 0)].d_dim, 1);
+    Matrix d_old = Matrix(old.stateSpaceModelsPerMode[(int)old.initialDiscreteMode(n, 0)].d_dim, 1);
     d_old = old.continuousStateData.d_k;
 
     double curMode = q_old;
@@ -264,21 +263,21 @@ public:
                                                 u_old, d_old);
     }
     old.continuousStateData.x_k = x_new;
-    // Append result to X in old object (columns)
-    old.continuousStateData.X.push_back(x_new);
+    // Append result to continuousVariables in old object (columns)
+    old.continuousStateData.continuousVariables.push_back(x_new);
     // Append result to discreteModes in old object (columns)
     old.initialDiscreteMode(n + 1, 0) = q_new;
 
   }
 
   void step_hyb_ad(shs_t &old, int n, int cond, int steps) {
-    arma::mat x_old(old.continuousStateData.X[n]);
-    arma::mat x_new = arma::mat(old.stateSpaceModelsPerMode[(int)old.initialDiscreteMode(n, 0)].x_dim, steps);
+    Matrix x_old(old.continuousStateData.continuousVariables[n]);
+    Matrix x_new = Matrix(old.stateSpaceModelsPerMode[(int)old.initialDiscreteMode(n, 0)].x_dim, steps);
     double q_old = old.initialDiscreteMode(n, 0);
     double q_new = q_old;
-    arma::mat u_old = arma::mat(old.stateSpaceModelsPerMode[(int)old.initialDiscreteMode(n, 0)].u_dim, 1);
+    Matrix u_old = Matrix(old.stateSpaceModelsPerMode[(int)old.initialDiscreteMode(n, 0)].u_dim, 1);
     u_old = old.continuousStateData.u_k;
-    arma::mat d_old = arma::mat(old.stateSpaceModelsPerMode[(int)old.initialDiscreteMode(n, 0)].d_dim, 1);
+    Matrix d_old = Matrix(old.stateSpaceModelsPerMode[(int)old.initialDiscreteMode(n, 0)].d_dim, 1);
     d_old = old.continuousStateData.d_k;
 
     if (old.discreteModes == 1) {
@@ -316,8 +315,8 @@ public:
             old.stateSpaceModelsPerMode[(int)q_old], x_old.col(j), u_old, d_old);
       }
     }
-    // Append result to X in old object (columns)
-    old.continuousStateData.X.push_back(x_new);
+    // Append result to continuousVariables in old object (columns)
+    old.continuousStateData.continuousVariables.push_back(x_new);
 
 
   }
@@ -341,13 +340,13 @@ public:
       } else {
         old.step_hyb(old, i, cond);
       }
-      if ((unsigned)old.continuousStateData.U.n_cols == (unsigned)N)
-        old.continuousStateData.u_k = old.continuousStateData.U.row(i);
-      if ((unsigned)old.continuousStateData.D.n_cols == (unsigned)N)
-        old.continuousStateData.d_k = old.continuousStateData.D.row(i);
+      if ((unsigned)old.continuousStateData.actionVariables.n_cols == (unsigned)N)
+        old.continuousStateData.u_k = old.continuousStateData.actionVariables.row(i);
+      if ((unsigned)old.continuousStateData.disturbanceVariables.n_cols == (unsigned)N)
+        old.continuousStateData.d_k = old.continuousStateData.disturbanceVariables.row(i);
       i++;
     }
-    arma::mat y = old.continuousStateData.X[0].t();
+    Matrix y = old.continuousStateData.continuousVariables[0].t();
 
     end = clock();
     time = (double)(end - begin) / CLOCKS_PER_SEC;
@@ -388,7 +387,7 @@ public:
       myfile.close();
       std::string y_name = "../results/y_" + str + ".txt";
       y.save(y_name, arma::raw_ascii);
-      arma::mat q = old.initialDiscreteMode;
+      Matrix q = old.initialDiscreteMode;
       std::string q_name = "../results/modes_" + str + ".txt";
       q.save(q_name, arma::raw_ascii);
       // TODO plotting
@@ -397,12 +396,12 @@ public:
 
   }
   bool obtainTqfromMat(const char *fn, shs_t &init) {
-    // Reading model file input in .arma::mat format
+    // Reading model file input in .Matrix format
     // and storing into ssmodel class
     mat_t *matf;
     matvar_t *matvar, *contents;
     bool error = 0;
-    // Read .arma::mat file
+    // Read .Matrix file
     matf = Mat_Open(fn, MAT_ACC_RDONLY);
     if (matf) // if successful in reading file
     {
@@ -431,7 +430,7 @@ public:
     double index = 0;
     std::vector<std::string> str = init.discreteKernel;
 
-    arma::mat p = arma::mat(init.discreteModes, init.discreteModes);
+    Matrix p = Matrix(init.discreteModes, init.discreteModes);
     for (int j = 0; j < init.discreteModes; j++) {
       for (int k = 0; k < init.discreteModes; k++) {
         std::vector<std::string> spl = splitStr(str[index], ':');
@@ -454,7 +453,7 @@ public:
   void updatepk(shs_t &init, int currentGuardindex) {
     // Traverse discreteKernel and get equialent probability matrix
     std::vector<std::string> str = init.discreteKernel;
-    arma::mat p = init.Pk[0];
+    Matrix p = init.Pk[0];
     int row = currentGuardindex % init.discreteModes;
     std::cout << "row : " << row << std::endl;
     int col = (int)currentGuardindex / init.discreteModes;
@@ -479,7 +478,7 @@ public:
   void updatepk(shs_t &init, int currentGuardindex, int step) {
     // Traverse discreteKernel and get equivalent probability matrix
     std::vector<std::string> str = init.discreteKernel;
-    arma::mat p = init.Pk[step];
+    Matrix p = init.Pk[step];
     int row = currentGuardindex % init.discreteModes;
     std::cout << "row : " << row << std::endl;
     int col = (int)(currentGuardindex) / init.discreteModes;
@@ -609,7 +608,7 @@ private:
   // Function to determine the type of guard
   // and output the lhs and rhs conditions
   //
-  bool getCurrentGuard(std::string x, arma::mat x_old, GiNaC::lst syms) {
+  bool getCurrentGuard(std::string x, Matrix x_old, GiNaC::lst syms) {
     std::vector<bool> guard = {};
     std::vector<std::string> y;
     std::vector<std::string> y0;  /// = splitStr(x,'&');
@@ -1115,14 +1114,14 @@ private:
 
   int checkData() {
     int error = 0;
-    if ((unsigned)this->stateSpaceModelsPerMode[0].x_dim != (unsigned)this->continuousStateData.X[0].n_rows) {
+    if ((unsigned)this->stateSpaceModelsPerMode[0].x_dim != (unsigned)this->continuousStateData.continuousVariables[0].n_rows) {
       error = 1;
     }
-    if ((unsigned)this->stateSpaceModelsPerMode[0].u_dim != (unsigned)this->continuousStateData.U.n_cols &&
+    if ((unsigned)this->stateSpaceModelsPerMode[0].u_dim != (unsigned)this->continuousStateData.actionVariables.n_cols &&
         this->stateSpaceModelsPerMode[0].u_dim > 0) {
       error = 2;
     }
-    if ((unsigned)this->stateSpaceModelsPerMode[0].d_dim != (unsigned)this->continuousStateData.D.n_cols &&
+    if ((unsigned)this->stateSpaceModelsPerMode[0].d_dim != (unsigned)this->continuousStateData.disturbanceVariables.n_cols &&
         this->stateSpaceModelsPerMode[0].d_dim > 0) {
       error = 3;
     }
@@ -1159,7 +1158,7 @@ private:
       this->discreteModes = q;
       this->discreteKernel = x; // Recall being stored in column format
     } else {
-      std::cout << "discreteKernel field not input in arma::mat file" << std::endl;
+      std::cout << "discreteKernel field not input in Matrix file" << std::endl;
     }
   }
   std::vector<int> t_q(shs_t &old, int q_old, int monte) {
@@ -1172,14 +1171,14 @@ private:
     std::random_device rd;
     std::mt19937 gen(rd());
     int count;
-    double sum, U;
+    double sum, actionVariables;
     for (int i = 0; i < steps; i++) {
       count = 0;
       sum = 0;
-      U = std::generate_canonical<double, 10>(gen);
-      while (sum < U) {
+      actionVariables = std::generate_canonical<double, 10>(gen);
+      while (sum < actionVariables) {
         sum += old.Pk[monte](modes[i], count);
-        if (sum > U) {
+        if (sum > actionVariables) {
           modes[i + 1] = count;
         }
         count++;
@@ -1193,16 +1192,16 @@ private:
 /*************************************************************************************************/
 // Single initial state SHS with fixed or sigmoidal probabilities governing the
 // transitioning between modes`
-template <> class shs_t<arma::mat, int>
+template <> class shs_t<Matrix, int>
 {
 public:
   int discreteModes;        // Discrete modes
-  arma::mat discreteKernel; // Discrete kernel- can represent either guards or probabilities
+  Matrix discreteKernel; // Discrete kernel- can represent either guards or probabilities
   int continuousSpaceDimension        // Dimension of continuous state space in given mode
-  arma::mat Pk;
-  arma::mat initialDiscreteMode;                 // Modes
+  Matrix Pk;
+  Matrix initialDiscreteMode;                 // Modes
   std::vector<ssmodels_t> stateSpaceModelsPerMode; // container of models
-  exdata_t continuousStateData;
+  SimulationData continuousStateData;
 
 private:
   bool sigmoid;
@@ -1210,20 +1209,20 @@ private:
 public:
   shs_t() {
     n = 1; // Dimension of continuous state space in given mode
-    Pk = arma::mat(discreteModes, n);
-    initialDiscreteMode = arma::mat(discreteModes, 1); // Initial mode
+    Pk = Matrix(discreteModes, n);
+    initialDiscreteMode = Matrix(discreteModes, 1); // Initial mode
     std::vector<ssmodels_t> stateSpaceModelsPerMode;
     discreteModes = 1; // Discrete modes
-    exdata_t continuousStateData;
-    discreteKernel = arma::mat(n, n);
+    SimulationData continuousStateData;
+    discreteKernel = Matrix(n, n);
     sigmoid = false;
   }
-  shs_t(int disc, int num, arma::mat tq, std::vector<ssmodels_t> &old,
-        exdata_t &data) {
+  shs_t(int disc, int num, Matrix tq, std::vector<ssmodels_t> &old,
+        SimulationData &data) {
     discreteModes = disc; // Discrete modes
     n = num;  // Dimension of continuous state space in given mode
-    Pk = data.InitTq[0];
-    initialDiscreteMode = data.q_init[0]; // Initial mode
+    Pk = data.initialModeDistribution[0];
+    initialDiscreteMode = data.initialMode[0]; // Initial mode
     stateSpaceModelsPerMode = old;
     continuousStateData = data;
     discreteKernel = tq;
@@ -1242,19 +1241,19 @@ public:
       exit(0);
     }
   }
-  shs_t(int num, std::vector<ssmodels_t> &old, exdata_t &data) {
-    discreteModes = data.U.n_cols; // Discrete modes
+  shs_t(int num, std::vector<ssmodels_t> &old, SimulationData &data) {
+    discreteModes = data.actionVariables.n_cols; // Discrete modes
     n = num;           // Dimension of continuous state space in given mode
-    Pk = data.InitTq[0];
-    initialDiscreteMode = data.q_init[0]; // Initial mode
+    Pk = data.initialModeDistribution[0];
+    initialDiscreteMode = data.initialMode[0]; // Initial mode
     stateSpaceModelsPerMode = old;
     continuousStateData = data;
-    discreteKernel = arma::zeros<arma::mat>(1, 1);
+    discreteKernel = ZeroMatrix(1, 1);
     discreteKernel.reset();
     sigmoid = false;
-    // update U dimension
+    // update actionVariables dimension
     for (size_t i = 0; i < discreteModes; i++) {
-      old[i].u_dim = data.U.n_cols;
+      old[i].u_dim = data.actionVariables.n_cols;
     }
     try {
       // Check dimensions of data
@@ -1273,39 +1272,39 @@ public:
   shs_t(int num, std::vector<ssmodels_t> &old) {
     discreteModes = old.size(); // Discrete modes
     n = num;        // Dimension of continuous state space in given mode
-    Pk = arma::zeros<arma::mat>(1, 1);
-    initialDiscreteMode = arma::zeros<arma::mat>(1, 1); // Initial mode
+    Pk = ZeroMatrix(1, 1);
+    initialDiscreteMode = ZeroMatrix(1, 1); // Initial mode
     stateSpaceModelsPerMode = old;
-    exdata_t data;
+    SimulationData data;
     continuousStateData = data;
-    discreteKernel = arma::zeros<arma::mat>(1, 1);
+    discreteKernel = ZeroMatrix(1, 1);
     discreteKernel.reset();
     sigmoid = false;
   }
   shs_t(std::vector<ssmodels_t> &old) {
     discreteModes = old.size();      // Discrete modes
     n = old[0].A.n_cols; // Dimension of continuous state space in given mode
-    Pk = arma::zeros<arma::mat>(1, 1);
-    initialDiscreteMode = arma::zeros<arma::mat>(1, 1); // Initial mode
+    Pk = ZeroMatrix(1, 1);
+    initialDiscreteMode = ZeroMatrix(1, 1); // Initial mode
     stateSpaceModelsPerMode = old;
-    exdata_t data;
+    SimulationData data;
     continuousStateData = data;
-    discreteKernel = arma::zeros<arma::mat>(1, 1);
+    discreteKernel = ZeroMatrix(1, 1);
     discreteKernel.reset();
     sigmoid = false;
   }
-  shs_t(arma::mat tq, std::vector<ssmodels_t> &old, exdata_t &data) {
+  shs_t(Matrix tq, std::vector<ssmodels_t> &old, SimulationData &data) {
     discreteModes = tq.n_rows;    // Discrete modes
     n = old[0].x_dim; // Dimension of continuous state space in given mode
-    Pk = data.InitTq[0];
-    initialDiscreteMode = data.q_init[0]; // Initial mode
+    Pk = data.initialModeDistribution[0];
+    initialDiscreteMode = data.initialMode[0]; // Initial mode
     stateSpaceModelsPerMode = old;
     continuousStateData = data;
     discreteKernel = tq;
     discreteKernel = checkStochasticity(discreteKernel);
     sigmoid = false;
     for (size_t i = 0; i < discreteModes; i++) {
-      old[i].u_dim = data.U.n_cols;
+      old[i].u_dim = data.actionVariables.n_cols;
     }
     try {
       // Check dimensions of data
@@ -1321,13 +1320,13 @@ public:
       exit(0);
     }
   }
-  shs_t(arma::mat tq, std::vector<ssmodels_t> &old) {
+  shs_t(Matrix tq, std::vector<ssmodels_t> &old) {
     discreteModes = tq.n_rows;    // Discrete modes
     n = old[0].x_dim; // Dimension of continuous state space in given mode
-    Pk = arma::zeros<arma::mat>(1, 1);
-    initialDiscreteMode = arma::zeros<arma::mat>(1, 1); // Initial mode
+    Pk = ZeroMatrix(1, 1);
+    initialDiscreteMode = ZeroMatrix(1, 1); // Initial mode
     stateSpaceModelsPerMode = old;
-    exdata_t data;
+    SimulationData data;
     continuousStateData = data;
     discreteKernel = tq;
     discreteKernel = checkStochasticity(discreteKernel);
@@ -1346,7 +1345,7 @@ public:
       exit(0);
     }
   }
-  shs_t(const char *fn, exdata_t &data) {
+  shs_t(const char *fn, SimulationData &data) {
     // Obtain number of discrete modes and obtain discreteKernel
     bool error = this->obtainTqfromMat(fn, *this);
 
@@ -1355,11 +1354,11 @@ public:
       discreteKernel = this->discreteKernel;
       sigmoid = false;
       continuousStateData = data;
-      Pk = data.InitTq[0];
-      initialDiscreteMode = data.q_init[0]; // Initial mode
+      Pk = data.initialModeDistribution[0];
+      initialDiscreteMode = data.initialMode[0]; // Initial mode
       // create array containing the ssmodels
       std::vector<ssmodels_t> models;
-      arma::mat dummy = -1 * arma::ones<arma::mat>(1, 1);
+      Matrix dummy = -1 * arma::ones<Matrix>(1, 1);
       for (int i = 1; i <= discreteModes; i++) {
         int x_dimension = data.x_k.n_rows;
         int u_dimension = data.u_k.n_rows;
@@ -1377,7 +1376,7 @@ public:
         ssmodels_t mod(x_dimension, u_dimension, d_dimension);
         if ((mod.C.n_rows == 1) && (mod.C.n_cols == 1) && x_dimension > 1) {
           mod.C.resize(x_dimension, x_dimension);
-          mod.C = arma::eye<arma::mat>(x_dimension, x_dimension);
+          mod.C = arma::eye<Matrix>(x_dimension, x_dimension);
         }
         this->n = x_dimensiocontinuousSpaceDimension // TODO: update to handle different dimensions
                                // for each state (Store)
@@ -1420,7 +1419,7 @@ public:
       sigmoid = false;
       // create array containing the ssmodels
       std::vector<ssmodels_t> models;
-      arma::mat dummy = -1 * arma::ones<arma::mat>(1, 1);
+      Matrix dummy = -1 * arma::ones<Matrix>(1, 1);
       for (int i = 1; i <= discreteModes; i++) {
 
         ssmodels_t mod;
@@ -1464,7 +1463,7 @@ public:
         sigmoid = false;
         // create array containing the ssmodels
         std::vector<ssmodels_t> models;
-        arma::mat dummy = -1 * arma::ones<arma::mat>(1, 1);
+        Matrix dummy = -1 * arma::ones<Matrix>(1, 1);
         for (int i = 1; i <= discreteModes; i++) {
           int x_dimension = this->stateSpaceModelsPerMode[i].A.n_rows;
           int u_dimension = this->stateSpaceModelsPerMode[i].B.n_rows;
@@ -1489,17 +1488,17 @@ public:
       }
     }
   }
-  shs_t(const char *fn, exdata_t &data, int NumModes) {
+  shs_t(const char *fn, SimulationData &data, int NumModes) {
     // Obtain number of discrete modes and obtain discreteKernel
     discreteModes = NumModes;
     sigmoid = true;
-    discreteKernel = arma::eye<arma::mat>(NumModes, NumModes);
+    discreteKernel = arma::eye<Matrix>(NumModes, NumModes);
     continuousStateData = data;
-    Pk = data.InitTq[0];
-    initialDiscreteMode = data.q_init[0]; // Initial mode
+    Pk = data.initialModeDistribution[0];
+    initialDiscreteMode = data.initialMode[0]; // Initial mode
     // create array containing the ssmodels
     std::vector<ssmodels_t> models;
-    arma::mat dummy = -1 * arma::ones<arma::mat>(1, 1);
+    Matrix dummy = -1 * arma::ones<Matrix>(1, 1);
     for (int i = 1; i <= discreteModes; i++) {
       int x_dimension = data.x_k.n_rows;
       int u_dimension = data.u_k.n_rows;
@@ -1549,14 +1548,14 @@ public:
     std::random_device rd;
     std::mt19937 gen(rd());
     int count;
-    double sum, U;
+    double sum, actionVariables;
     for (int i = 0; i < steps; i++) {
       count = 0;
       sum = 0;
-      U = std::generate_canonical<double, 10>(gen);
-      while (sum < U) {
+      actionVariables = std::generate_canonical<double, 10>(gen);
+      while (sum < actionVariables) {
         sum += old.Pk(modes[i], count);
-        if (sum > U) {
+        if (sum > actionVariables) {
           modes[i + 1] = count;
         }
         count++;
@@ -1567,10 +1566,10 @@ public:
   }
   // Dynamic model of continuous state
   void step(shs_t &old, int n, int steps) {
-    arma::mat x_old(old.continuousStateData.X[n]);
-    arma::mat x_new = arma::mat(old.stateSpaceModelsPerMode[0].x_dim, steps);
-    arma::mat u_old = old.continuousStateData.u_k;
-    arma::mat d_old = arma::mat(old.stateSpaceModelsPerMode[(int)old.initialDiscreteMode(n, 0)].d_dim, steps);
+    Matrix x_old(old.continuousStateData.continuousVariables[n]);
+    Matrix x_new = Matrix(old.stateSpaceModelsPerMode[0].x_dim, steps);
+    Matrix u_old = old.continuousStateData.u_k;
+    Matrix d_old = Matrix(old.stateSpaceModelsPerMode[(int)old.initialDiscreteMode(n, 0)].d_dim, steps);
     d_old = old.continuousStateData.d_k;
     if (old.discreteModes == 1) {
       if (old.stateSpaceModelsPerMode[0].N.is_empty()) {
@@ -1595,7 +1594,7 @@ public:
     } else {
       double lhs =
           arma::accu(old.stateSpaceModelsPerMode[(int)old.initialDiscreteMode(n, 0)].sigma ==
-                     arma::zeros<arma::mat>(
+                     ZeroMatrix(
                          (double)old.stateSpaceModelsPerMode[(int)old.initialDiscreteMode(n, 0)].sigma.n_rows,
                          (double)old.stateSpaceModelsPerMode[(int)old.initialDiscreteMode(n, 0)].sigma.n_cols));
       if (lhs > 0) {
@@ -1634,8 +1633,8 @@ public:
             // Append result to discreteModes in old object (columns)
             old.initialDiscreteMode(n + 1, j) = q_new;
           } else {
-            int q_new = old.continuousStateData.U(n + 1, 0);
-            arma::mat emptyMat = arma::zeros<arma::mat>(1, 1);
+            int q_new = old.continuousStateData.actionVariables(n + 1, 0);
+            Matrix emptyMat = ZeroMatrix(1, 1);
             emptyMat.reset();
             x_new = old.stateSpaceModelsPerMode[q_new].updateLTIst(
                 old.stateSpaceModelsPerMode[(int)u_old(0, 0)], x_old.col(j), emptyMat, emptyMat);
@@ -1667,7 +1666,7 @@ public:
           // Append result to discreteModes in old object (columns)
           old.initialDiscreteMode(n + 1, j) = q_new;
           // Assuming no reset kernels
-          arma::mat x_up = arma::mat(old.stateSpaceModelsPerMode[q_new].x_dim, 1);
+          Matrix x_up = Matrix(old.stateSpaceModelsPerMode[q_new].x_dim, 1);
           if (!old.stateSpaceModelsPerMode[(int)old.initialDiscreteMode(n, j)].N.is_empty()) {
             x_up = old.stateSpaceModelsPerMode[q_new].updateBi(old.stateSpaceModelsPerMode[(int)old.initialDiscreteMode(n, j)].A,
                                              old.stateSpaceModelsPerMode[(int)old.initialDiscreteMode(n, j)].B,
@@ -1698,10 +1697,10 @@ public:
         }
       }
     }
-    // Append result to X in old object (3rd dimension)
-    old.continuousStateData.X.push_back(x_new);
+    // Append result to continuousVariables in old object (3rd dimension)
+    old.continuousStateData.continuousVariables.push_back(x_new);
   }
-  void computeConditional(shs_t &old, arma::mat x_old, int index, int q_old) {
+  void computeConditional(shs_t &old, Matrix x_old, int index, int q_old) {
     double min = -1, max = 1;
     double val; //,err, xmin[1] ={}, xmax[1]={};
     std::vector<double> v = {};
@@ -1722,7 +1721,7 @@ public:
     }
     //    std::cout << "New kernel: " << old.Pk << std::endl;
   }
-  void createPySimPlots(arma::mat y, arma::mat modes, int x_dim) {
+  void createPySimPlots(Matrix y, Matrix modes, int x_dim) {
     int T = y.n_rows / x_dim;
       std::cout << "Creating python simulation plot file" << std::endl;
       std::ofstream myfile;
@@ -1747,8 +1746,8 @@ public:
       myfile << std::endl;
 
       // Get separate cont var evolution
-      std::vector<arma::mat> y_all;
-      arma::mat y1 = arma::zeros<arma::mat>(T, y.n_cols);
+      3DMatrix y_all;
+      Matrix y1 = ZeroMatrix(T, y.n_cols);
 
       if (x_dim == 1) {
         y1 = y;
@@ -1760,7 +1759,7 @@ public:
             count++;
           }
           y_all.push_back(y1);
-          y1 = arma::zeros<arma::mat>(T, y.n_cols);
+          y1 = ZeroMatrix(T, y.n_cols);
         }
       }
 
@@ -1915,24 +1914,24 @@ public:
     // For stochastic version perform Monte Carlo + compute mean
     int i = 0, x_dim = old.stateSpaceModelsPerMode[0].A.n_rows;
 
-    arma::mat y = arma::zeros<arma::mat>(N * x_dim, steps);
-    arma::mat modes = arma::zeros<arma::mat>(N, steps);
+    Matrix y = ZeroMatrix(N * x_dim, steps);
+    Matrix modes = ZeroMatrix(N, steps);
     old.Pk.set_size(size(old.discreteKernel));
     old.Pk = old.discreteKernel;
     int count = 0;
     while (i < N) {
       old.step(old, i, steps);
       if (old.stateSpaceModelsPerMode[0].u_dim > 0) {
-        if ((unsigned)old.continuousStateData.U.n_rows == (unsigned)N) {
-          old.continuousStateData.u_k = old.continuousStateData.U.row(i);
+        if ((unsigned)old.continuousStateData.actionVariables.n_rows == (unsigned)N) {
+          old.continuousStateData.u_k = old.continuousStateData.actionVariables.row(i);
         }
       }
       if (old.stateSpaceModelsPerMode[0].d_dim > 0) {
-        if ((unsigned)old.continuousStateData.D.n_rows == (unsigned)N) {
-          old.continuousStateData.d_k = old.continuousStateData.D.row(i);
+        if ((unsigned)old.continuousStateData.disturbanceVariables.n_rows == (unsigned)N) {
+          old.continuousStateData.d_k = old.continuousStateData.disturbanceVariables.row(i);
         }
       }
-      arma::mat tempX = old.continuousStateData.X[i];
+      Matrix tempX = old.continuousStateData.continuousVariables[i];
       if(x_dim == 1) {
         y.row(count) = tempX;
       }
@@ -1982,7 +1981,7 @@ public:
       myfile.close();
       std::string y_name = "../results/y_" + str + ".txt";
       y.save(y_name, arma::raw_ascii);
-      arma::mat q = old.initialDiscreteMode;
+      Matrix q = old.initialDiscreteMode;
       std::string q_name = "../results/modes_" + str + ".txt";
       q.save(q_name, arma::raw_ascii);
       old.createPySimPlots(y, modes, x_dim);
@@ -1990,7 +1989,7 @@ public:
 
   }
   bool obtainTqfromMat(const char *fn, shs_t &init) {
-    // Reading model file input in .arma::mat format
+    // Reading model file input in .Matrix format
     // and storing into ssmodel class
     mat_t *matf;
     matvar_t *matvar, *contents;
@@ -2020,14 +2019,14 @@ public:
 private:
   int checkData() {
     int error = 0;
-    if ((unsigned)this->stateSpaceModelsPerMode[0].x_dim != (unsigned)this->continuousStateData.X[0].n_rows) {
+    if ((unsigned)this->stateSpaceModelsPerMode[0].x_dim != (unsigned)this->continuousStateData.continuousVariables[0].n_rows) {
       error = 1;
     }
-    if ((unsigned)this->stateSpaceModelsPerMode[0].u_dim != (unsigned)this->continuousStateData.U.n_cols &&
+    if ((unsigned)this->stateSpaceModelsPerMode[0].u_dim != (unsigned)this->continuousStateData.actionVariables.n_cols &&
         (unsigned)this->stateSpaceModelsPerMode[0].u_dim > 0) {
       error = 2;
     }
-    if ((unsigned)this->stateSpaceModelsPerMode[0].d_dim != (unsigned)this->continuousStateData.D.n_cols &&
+    if ((unsigned)this->stateSpaceModelsPerMode[0].d_dim != (unsigned)this->continuousStateData.disturbanceVariables.n_cols &&
         (unsigned)this->stateSpaceModelsPerMode[0].d_dim > 0) {
       error = 3;
     }
@@ -2062,30 +2061,30 @@ private:
         this->discreteModes = numEl;
 
         // Check stochasticity of kernel
-        arma::mat tq = strtodMatrix(x);
+        Matrix tq = strtodMatrix(x);
         tq = checkStochasticity(tq);
         this->discreteKernel = tq;
       } else {
         std::cout << "Incorrect discreteKernel format" << std::endl;
       }
     } else {
-      std::cout << "discreteKernel field not input in arma::mat file" << std::endl;
+      std::cout << "discreteKernel field not input in Matrix file" << std::endl;
     }
   }
 };
 
 /*************************************************************************************************/
 // SHS with multiple initial modes
-template <> class shs_t<arma::mat, std::vector<int>> {
+template <> class shs_t<Matrix, std::vector<int>> {
 public:
   std::vector<int> discreteModes; // Discrete modes
-  std::vector<arma::mat>
+  3DMatrix
       discreteKernel; // Discrete kernel- can represent either guards or probabilities
   int continuousSpaceDimension  // Dimension of continuous state space in given mode
-  std::vector<arma::mat> Pk;
-  std::vector<arma::mat> initialDiscreteMode;    // Modes
+  3DMatrix Pk;
+  3DMatrix initialDiscreteMode;    // Modes
   std::vector<ssmodels_t> stateSpaceModelsPerMode; // container of models
-  exdata_t continuousStateData;
+  SimulationData continuousStateData;
 
 private:
   bool sigmoid;
@@ -2094,19 +2093,19 @@ public:
   shs_t() {
     discreteModes = {1}; // Discrete modes
     n = 1;   // Dimension of continuous state space in given mode
-    Pk = {arma::mat(discreteModes[0], n)};
-    initialDiscreteMode = {arma::mat(discreteModes[0], 1)}; // Initial mode
+    Pk = {Matrix(discreteModes[0], n)};
+    initialDiscreteMode = {Matrix(discreteModes[0], 1)}; // Initial mode
     std::vector<ssmodels_t> stateSpaceModelsPerMode;
-    exdata_t continuousStateData;
-    discreteKernel = {arma::mat(n, n)};
+    SimulationData continuousStateData;
+    discreteKernel = {Matrix(n, n)};
     sigmoid = false;
   }
-  shs_t(std::vector<int> disc, int num, std::vector<arma::mat> tq,
-        std::vector<ssmodels_t> &old, exdata_t &data) {
+  shs_t(std::vector<int> disc, int num, 3DMatrix tq,
+        std::vector<ssmodels_t> &old, SimulationData &data) {
     discreteModes = disc; // Discrete modes
     n = num;  // Dimension of continuous state space in given mode
-    Pk = data.InitTq;
-    initialDiscreteMode = data.q_init; // Initial mode
+    Pk = data.initialModeDistribution;
+    initialDiscreteMode = data.initialMode; // Initial mode
     stateSpaceModelsPerMode = old;
     continuousStateData = data;
     discreteKernel = tq;
@@ -2125,12 +2124,12 @@ public:
       exit(0);
     }
   }
-  shs_t(std::vector<arma::mat> tq, std::vector<ssmodels_t> &old,
-        exdata_t &data) {
+  shs_t(3DMatrix tq, std::vector<ssmodels_t> &old,
+        SimulationData &data) {
     discreteModes = {1};          // Discrete modes
     n = old[0].x_dim; // Dimension of continuous state space in given mode
-    Pk = data.InitTq;
-    initialDiscreteMode = data.q_init; // Initial mode
+    Pk = data.initialModeDistribution;
+    initialDiscreteMode = data.initialMode; // Initial mode
     stateSpaceModelsPerMode = old;
     continuousStateData = data;
     discreteKernel = tq;
@@ -2149,7 +2148,7 @@ public:
       exit(0);
     }
   }
-  shs_t(const char *fn, exdata_t &data, std::vector<int> NumModes) {
+  shs_t(const char *fn, SimulationData &data, std::vector<int> NumModes) {
     // Obtain number of discrete modes and obtain discreteKernel
     std::vector<int> num = {2, 2};
 
@@ -2157,15 +2156,15 @@ public:
 
     sigmoid = true;
     for (unsigned int m = 0; m < num.size(); m++) {
-      discreteKernel.push_back(arma::eye<arma::mat>(num[m], num[m]));
-      Pk.push_back(data.InitTq[m]);
-      initialDiscreteMode.push_back(data.q_init[m]); // Initial mode
+      discreteKernel.push_back(arma::eye<Matrix>(num[m], num[m]));
+      Pk.push_back(data.initialModeDistribution[m]);
+      initialDiscreteMode.push_back(data.initialMode[m]); // Initial mode
     }
     continuousStateData = data;
 
     // create array containing the ssmodels
     std::vector<ssmodels_t> models;
-    arma::mat dummy = -1 * arma::ones<arma::mat>(1, 1);
+    Matrix dummy = -1 * arma::ones<Matrix>(1, 1);
     for (int i = 1; i <= discreteModes[0]; i++) {
       int x_dimension = data.x_k.n_rows;
       int u_dimension = data.u_k.n_rows;
@@ -2214,11 +2213,11 @@ public:
 
     sigmoid = true;
     for (unsigned int m = 0; m < num.size(); m++) {
-      discreteKernel.push_back(arma::eye<arma::mat>(num[m], num[m]));
+      discreteKernel.push_back(arma::eye<Matrix>(num[m], num[m]));
     }
     // create array containing the ssmodels
     std::vector<ssmodels_t> models;
-    arma::mat dummy = -1 * arma::ones<arma::mat>(1, 1);
+    Matrix dummy = -1 * arma::ones<Matrix>(1, 1);
     for (int i = 1; i <= discreteModes[0]; i++) {
       int x_dimension = this->stateSpaceModelsPerMode[i].A.n_rows;
       int u_dimension = this->stateSpaceModelsPerMode[i].B.n_rows;
@@ -2252,14 +2251,14 @@ public:
     std::random_device rd;
     std::mt19937 gen(rd());
     int count;
-    double sum, U;
+    double sum, actionVariables;
     for (int i = 0; i < steps; i++) {
       count = 0;
       sum = 0;
-      U = std::generate_canonical<double, 10>(gen);
-      while (sum < U) {
+      actionVariables = std::generate_canonical<double, 10>(gen);
+      while (sum < actionVariables) {
         sum += old.Pk[index](modes[i], count);
-        if (sum > U) {
+        if (sum > actionVariables) {
           modes[i + 1] = count;
         }
         count++;
@@ -2270,17 +2269,17 @@ public:
   }
   // Dynamic model of continuous state
   void step(shs_t &old, int n, int steps) {
-    arma::mat x_old(old.continuousStateData.X[n]);
-    // arma::mat x_old = arma::mat(old.stateSpaceModelsPerMode[(int) old.initialDiscreteMode[0](n,0)].x_dim,1);
-    // x_old = old.continuousStateData.X[n];
-    arma::mat x_new = arma::mat(old.stateSpaceModelsPerMode[(int)old.initialDiscreteMode[0](n, 0)].x_dim, steps);
+    Matrix x_old(old.continuousStateData.continuousVariables[n]);
+    // Matrix x_old = Matrix(old.stateSpaceModelsPerMode[(int) old.initialDiscreteMode[0](n,0)].x_dim,1);
+    // x_old = old.continuousStateData.continuousVariables[n];
+    Matrix x_new = Matrix(old.stateSpaceModelsPerMode[(int)old.initialDiscreteMode[0](n, 0)].x_dim, steps);
 
     // std::vector<double> vec(x_old.size());
-    // Eigen::Map<arma::mat>(vec.data(), x_old.n_rows, x_old.n_cols) =x_old; //
+    // Eigen::Map<Matrix>(vec.data(), x_old.n_rows, x_old.n_cols) =x_old; //
 
-    arma::mat u_old = arma::mat(old.stateSpaceModelsPerMode[(int)old.initialDiscreteMode[0](n, 0)].u_dim, 1);
+    Matrix u_old = Matrix(old.stateSpaceModelsPerMode[(int)old.initialDiscreteMode[0](n, 0)].u_dim, 1);
     u_old = old.continuousStateData.u_k;
-    arma::mat d_old = arma::mat(old.stateSpaceModelsPerMode[(int)old.initialDiscreteMode[0](n, 0)].d_dim, 1);
+    Matrix d_old = Matrix(old.stateSpaceModelsPerMode[(int)old.initialDiscreteMode[0](n, 0)].d_dim, 1);
     d_old = old.continuousStateData.d_k;
 
     if (old.discreteModes[0] == 1) {
@@ -2289,7 +2288,7 @@ public:
 
       double equal =
           arma::accu(old.stateSpaceModelsPerMode[(int)old.initialDiscreteMode[0](n, 0)].sigma ==
-                     arma::zeros<arma::mat>(
+                     ZeroMatrix(
                          old.stateSpaceModelsPerMode[(int)old.initialDiscreteMode[0](n, 0)].sigma.n_rows,
                          old.stateSpaceModelsPerMode[(int)old.initialDiscreteMode[0](n, 0)].sigma.n_cols));
       if (equal > 0) {
@@ -2363,7 +2362,7 @@ public:
           old.initialDiscreteMode[1](n + 1, j) = q_new[1];
 
           // Assuming no reset kernels
-          arma::mat x_up = arma::mat(1, 1);
+          Matrix x_up = Matrix(1, 1);
 
           if (old.stateSpaceModelsPerMode[(int)old.initialDiscreteMode[0](n, j)].d_dim == 0) {
             for (int k = 0; k < old.stateSpaceModelsPerMode[q_new[0]].x_dim; k++) {
@@ -2388,11 +2387,11 @@ public:
           }
         }
       }
-      // Append result to X in old object (3rd dimension)
-      old.continuousStateData.X.push_back(x_new);
+      // Append result to continuousVariables in old object (3rd dimension)
+      old.continuousStateData.continuousVariables.push_back(x_new);
     }
   }
-  void computeConditional(shs_t &old, arma::mat x_old, int index, int q_old) {
+  void computeConditional(shs_t &old, Matrix x_old, int index, int q_old) {
     double min = -1, max = 1;
     double val, err, xmin[1] = {}, xmax[1] = {};
     std::vector<double> v = {};
@@ -2434,23 +2433,23 @@ public:
     // For stochastic version perform Monte Carlo + compute mean
     int i = 0;
     int x_dim =old.stateSpaceModelsPerMode[0].x_dim ;
-    arma::mat y = arma::zeros<arma::mat>(N * x_dim, steps);
-    arma::mat modes = arma::zeros<arma::mat>(N, steps);
+    Matrix y = ZeroMatrix(N * x_dim, steps);
+    Matrix modes = ZeroMatrix(N, steps);
     old.Pk = old.discreteKernel;
     int count = 0;
     while (i < N) {
       old.step(old, i, steps);
       if (old.stateSpaceModelsPerMode[0].u_dim > 0) {
-        if ((unsigned)old.continuousStateData.U.n_rows == (unsigned)N) {
-          old.continuousStateData.u_k = old.continuousStateData.U.row(i);
+        if ((unsigned)old.continuousStateData.actionVariables.n_rows == (unsigned)N) {
+          old.continuousStateData.u_k = old.continuousStateData.actionVariables.row(i);
         }
       }
       if (old.stateSpaceModelsPerMode[0].d_dim > 0) {
-        if ((unsigned)old.continuousStateData.D.n_rows == (unsigned)N) {
-          old.continuousStateData.d_k = old.continuousStateData.D.row(i);
+        if ((unsigned)old.continuousStateData.disturbanceVariables.n_rows == (unsigned)N) {
+          old.continuousStateData.d_k = old.continuousStateData.disturbanceVariables.row(i);
         }
       }
-      arma::mat tempX = old.continuousStateData.X[i];
+      Matrix tempX = old.continuousStateData.continuousVariables[i];
       if(old.stateSpaceModelsPerMode[0].x_dim == 1) {
         y.row(count) = tempX;
       }
@@ -2500,17 +2499,17 @@ public:
       myfile.close();
       std::string y_name = "../results/y_" + str + ".txt";
       y.save(y_name, arma::raw_ascii);
-      arma::mat q = old.initialDiscreteMode[0];
+      Matrix q = old.initialDiscreteMode[0];
       std::string q_name = "../results/modes_" + str + ".txt";
       q.save(q_name, arma::raw_ascii);
     }
   }
   void obtainTqfromMat(const char *fn, shs_t &init) {
-    // Reading model file input in .arma::mat format
+    // Reading model file input in .Matrix format
     // and storing into ssmodel class
     mat_t *matf;
     matvar_t *matvar, *contents;
-    // Read .arma::mat file
+    // Read .Matrix file
     try {
       matf = Mat_Open(fn, MAT_ACC_RDONLY);
       if (matf) // if successful in reading file
@@ -2542,14 +2541,14 @@ public:
 private:
   int checkData() {
     int error = 0;
-    if ((unsigned)this->stateSpaceModelsPerMode[0].x_dim != (unsigned)this->continuousStateData.X[0].n_rows) {
+    if ((unsigned)this->stateSpaceModelsPerMode[0].x_dim != (unsigned)this->continuousStateData.continuousVariables[0].n_rows) {
       error = 1;
     }
     if ((unsigned)this->stateSpaceModelsPerMode[0].u_dim != (unsigned)this->continuousStateData.U.n_rows &&
         (unsigned)this->stateSpaceModelsPerMode[0].u_dim > 0) {
       error = 2;
     }
-    if ((unsigned)this->stateSpaceModelsPerMode[0].d_dim != (unsigned)this->continuousStateData.D.n_rows &&
+    if ((unsigned)this->stateSpaceModelsPerMode[0].d_dim != (unsigned)this->continuousStateData.disturbanceVariables.n_rows &&
         (unsigned)this->stateSpaceModelsPerMode[0].d_dim > 0) {
       error = 3;
     }
@@ -2586,14 +2585,14 @@ private:
         this->discreteModes[0] = numEl;
 
         // Check stochasticity of kernel
-        arma::mat tq = strtodMatrix(x);
+        Matrix tq = strtodMatrix(x);
         tq = checkStochasticity(tq.t());
         this->discreteKernel[0] = tq;
       } else {
         std::cout << "Incorrect discreteKernel format" << std::endl;
       }
     } else {
-      std::cout << "discreteKernel field not input in arma::mat file" << std::endl;
+      std::cout << "discreteKernel field not input in Matrix file" << std::endl;
     }
   }
 };

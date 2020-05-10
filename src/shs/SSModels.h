@@ -10,15 +10,13 @@
 #define SSMODELS_H_
 
 #include "ExtDatat.h"
-#include "matio.h" /*Reading .arma::mat files*/
+#include "matio.h" /*Reading .Matrix files*/
 #include "utility.h"
 #include <armadillo>
 
-typedef arma::mat (*ssmodels_func)(unsigned n, const double *x, void *fdata);
+typedef Matrix (*ssmodels_func)(unsigned n, const double *x, void *fdata);
 
 typedef ssmodels_func func; // nlopt::func synoynm
-
-typedef emptyMatrix = arma::zeros<arma::mat>(1,1);
 
 class ssmodels_t
 {
@@ -27,31 +25,31 @@ class ssmodels_t
   ssmodels_t(const int _xDim, const int uDim, const int dDim) noexcept : xDim{_xDim}, uDim{_uDim}, dDim{_dDim}, deltaT{-1}, A{}, B{},F{}, Q{}, N{}, Sigma{} {}
 
   // Model type : x_k+1 = Ax_k + Bu_k + N(x_k (.) u_k)+ F*Norm(0, Sigma) + Q  : Bilinear
-  ssmodels_t(const int _deltaT, const arma::mat _A, const arma::mat _B, arma::mat _N, const arma::mat _F, const arma::mat _Q, const arma::mat _Sigma) noexpect:
+  ssmodels_t(const int _deltaT, const Matrix _A, const Matrix _B, Matrix _N, const Matrix _F, const Matrix _Q, const Matrix _Sigma) noexpect:
             xDim{_A.n_rows}, uDim{_B.n_rows}, dDim{_D.n_rows}, deltaT{_deltaT}, A{_A}, B{_B}, F{_F}, Q{_Q}, N{_N}, Sigma{_Sigma} {}
 
   // Model type : x_k+1 = Ax_k + Bu_k + F*Norm(0, Sigma) + Q  : Bilinear
-  ssmodels_t(int _deltaT, arma::mat _A, arma::mat _B, arma::mat _F, arma::mat _Q, arma::mat _Sigma)
+  ssmodels_t(int _deltaT, Matrix _A, Matrix _B, Matrix _F, Matrix _Q, Matrix _Sigma)
   {
-    return ssmodels_t(_deltaT, _A, _B, _F, arma::zeros<arma::matrix>(1,1).reset(), _Q, _Sigma);
+    return ssmodels_t(_deltaT, _A, _B, _F, arma::zeros<Matrixrix>(1,1).reset(), _Q, _Sigma);
   };
 
   // Model type : x_k+1 = Ax_k + Bu_k + F*Norm(0, Sigma) : Bilinear
-  ssmodels_t(int _deltaT, arma::mat _A, arma::mat _B, arma::mat _F, arma::mat _Sigma)
+  ssmodels_t(int _deltaT, Matrix _A, Matrix _B, Matrix _F, Matrix _Sigma)
   {
-    return ssmodels_t(_deltaT, _A, _B, _F, arma::zeros<arma::matrix>(1,1).reset(), arma::zeros<arma::matrix>(1,1).reset(), _Sigma);
+    return ssmodels_t(_deltaT, _A, _B, _F, arma::zeros<Matrixrix>(1,1).reset(), arma::zeros<Matrixrix>(1,1).reset(), _Sigma);
   };
 
   // Model type : x_k+1 = Ax_k + F*Norm(0, Sigma) : Bilinear
-  ssmodels_t(int _deltaT, arma::mat _A, arma::mat _F, arma::mat _Sigma)
+  ssmodels_t(int _deltaT, Matrix _A, Matrix _F, Matrix _Sigma)
   {
-    return ssmodels_t(_deltaT, _A, arma::zeros<arma::matrix>(1,1).reset(), _F, arma::zeros<arma::matrix>(1,1).reset(), arma::zeros<arma::matrix>(1,1).reset(), _Sigma);
+    return ssmodels_t(_deltaT, _A, arma::zeros<Matrixrix>(1,1).reset(), _F, arma::zeros<Matrixrix>(1,1).reset(), arma::zeros<Matrixrix>(1,1).reset(), _Sigma);
   };
 
   // Model type : x_k+1 = Ax_k + F*Norm(0, Sigma) + Q : Bilinear
-  ssmodels_t(int _deltaT, arma::mat _A, arma::mat _F, arma::mat _Q, arma::mat _Sigma)
+  ssmodels_t(int _deltaT, Matrix _A, Matrix _F, Matrix _Q, Matrix _Sigma)
   {
-    return ssmodels_t(_deltaT, _A, arma::zeros<arma::matrix>(1,1).reset(), _F, arma::zeros<arma::matrix>(1,1).reset(), _Q, _Sigma);
+    return ssmodels_t(_deltaT, _A, arma::zeros<Matrixrix>(1,1).reset(), _F, arma::zeros<Matrixrix>(1,1).reset(), _Q, _Sigma);
   };
 
   // modelialise state space model based on data from input Matlab file for MDP abstraction based abstractions
@@ -80,15 +78,15 @@ class ssmodels_t
   // 2. Check if dimensions match
   void populateStateSpaceModelForIMDP(matvar_t &content, int currentMode);
   // Fill state space matrices from corresponding variable in MATLAB file
-  const arma::mat fillMatrix(matvar_t &content);
+  const Matrix fillMatrix(matvar_t &content);
   // Read contents from MATLAB file of type cell,  this is used for Tq when in hybrid mode
   const std::string readCells(matvar_t &content);
   void checkModel();
 
-  const arma::mat getDeterministicPartOfModelUpdate(const arma::mat x_k, const arma::mat u_k, const arma::mat d_k);
-  const arma::mat getDeterministicPartOfModelUpdate(const arma::mat x_k, const arma::mat z_k);
-  const arma::mat getDeterministicPartOfModelUpdate(const arma::mat x_k);
-  const arma::mat ssmodels_t::getStochasticModelUpdate(const arma::mat x_k, const arma::mat u_k, const arma::mat d_k);
+  const Matrix getDeterministicPartOfModelUpdate(const Matrix x_k, const Matrix u_k, const Matrix d_k);
+  const Matrix getDeterministicPartOfModelUpdate(const Matrix x_k, const Matrix z_k);
+  const Matrix getDeterministicPartOfModelUpdate(const Matrix x_k);
+  const Matrix ssmodels_t::getStochasticModelUpdate(const Matrix x_k, const Matrix u_k, const Matrix d_k);
 private:
   int xDim; // Dimension of state spaces i.e. number of continuous var
   int uDim; // Dimension of control input
@@ -96,21 +94,24 @@ private:
              // either input or computed
 
   double deltaT; // If <= 0 then in CT model
-  arma::mat A;
-  arma::mat B;
-  arma::mat F; // F for disturbances of in case of switching systems to correspond to the G function in Gw[k]
-  arma::mat N; // N for bilinear models
-  arma::mat Q;
-  arma::mat Sigma; // If Zeros then deterministic models
+  Matrix A;
+  Matrix B;
+  Matrix F; // F for disturbances of in case of switching systems to correspond to the G function in Gw[k]
+  Matrix N; // N for bilinear models
+  Matrix Q;
+  Matrix Sigma; // If Zeros then getDeterministicPartOfModelUpdaterministic models
 
   virtual ~ssmodels_t();
 };
 
-static arma::mat readMatrixMat(const char *fn, const char *var) {
+static Matrix readMatrixMat(const char *fn, const char *var)
+{
   mat_t *matf;
   matvar_t *matvar, *contents;
-  arma::mat tq;
-  try {
+  Matrix tq;
+  try
+
+  {
     matf = Mat_Open(fn, MAT_ACC_RDONLY);
     if (matf) // if successful in reading file
     {
@@ -157,7 +158,7 @@ static arma::mat readMatrixMat(const char *fn, const char *var) {
       }
     } else // unsuccessfull in opening file
     {
-      throw "Error opening arma::mat file";
+      throw "Error opening Matrix file";
     }
     Mat_Close(matf);
   } catch (const char *msg) {
@@ -167,21 +168,26 @@ static arma::mat readMatrixMat(const char *fn, const char *var) {
   return tq;
 }
 
-static std::vector<arma::mat> read3DMatrixMat(const char *fn, const char *var) {
+static 3DMatrix read3DMatrixMat(const char *fn, const char *var)
+{
   mat_t *matf;
   matvar_t *matvar, *contents;
-  std::vector<arma::mat> tq;
-  try {
+  3DMatrix tq;
+  try
+  {
     matf = Mat_Open(fn, MAT_ACC_RDONLY);
     if (matf) // if successful in reading file
     {
       // read each variable within file and populate
       // state space model based on variable name
       contents = Mat_VarRead(matf, var);
-      if (contents == NULL) {
+      if (contents == NULL)
+      {
         std::cout << "Variable not found in file" << std::endl;
-      } else {
-        if (contents->data_type == MAT_T_DOUBLE) {
+      }
+      else
+      {
+        if (contents->data_type == MAT_T_DOUBLE)
           std::string str;
           size_t stride = Mat_SizeOf(contents->data_type);
           char *data = (char *)contents->data;
@@ -230,7 +236,7 @@ static std::vector<arma::mat> read3DMatrixMat(const char *fn, const char *var) {
       }
     } else // unsuccessfull in opening file
     {
-      throw "Error opening arma::mat file";
+      throw "Error opening Matrix file";
     }
     Mat_Close(matf);
   } catch (const char *msg) {
