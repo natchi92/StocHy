@@ -1,0 +1,2 @@
+/usr/bin/ar qc libshs.a  CMakeFiles/shs.dir/CMakeFiles/3.10.2/CompilerIdCXX/CMakeCXXCompilerId.cpp.o CMakeFiles/shs.dir/Main.cpp.o CMakeFiles/shs.dir/SSModels.cpp.o
+/usr/bin/ranlib libshs.a

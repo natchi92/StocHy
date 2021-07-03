@@ -1,0 +1,1 @@
+/usr/bin/c++     CMakeFiles/a.dir/Main.cpp.o CMakeFiles/a.dir/SSModels.cpp.o  -o a 

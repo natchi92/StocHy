@@ -1,0 +1,40 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/nathalie/git/stochy/src/shs/ExtDatat.h
+
+/home/nathalie/git/stochy/src/shs/Main.cpp
+SSModels.h
+/home/nathalie/git/stochy/src/shs/SSModels.h
+optional
+-
+stdio.h
+-
+
+/home/nathalie/git/stochy/src/shs/SSModels.cpp
+SSModels.h
+/home/nathalie/git/stochy/src/shs/SSModels.h
+armadillo
+-
+string
+-
+
+/home/nathalie/git/stochy/src/shs/SSModels.h
+ExtDatat.h
+/home/nathalie/git/stochy/src/shs/ExtDatat.h
+utility.h
+/home/nathalie/git/stochy/src/shs/utility.h
+armadillo
+-
+optional
+-
+functional
+-
+
+/home/nathalie/git/stochy/src/shs/utility.h
+
